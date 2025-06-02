@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { BatteryCharging, Save, Wifi } from "lucide-react";
+import { BatteryCharging, Save, Wifi, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 
@@ -54,7 +54,7 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
   /**
    * Загружаем данные станции с автоматическим обновлением каждые 5 секунд
    */
-  const { data: station, isLoading } = useQuery<ChargingStation>({
+  const { data: station, isLoading, isFetching, refetch } = useQuery<ChargingStation>({
     queryKey: ['/api/stations', stationId],
     enabled: !!stationId,
     refetchInterval: 5000, // Обновляем каждые 5 секунд для синхронизации
@@ -147,6 +147,14 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
   };
 
   /**
+   * Принудительное обновление данных
+   * Очищает кэш и загружает свежие данные с сервера
+   */
+  const handleRefresh = async () => {
+    await refetch();
+  };
+
+  /**
    * Обработчик изменения checkbox с автосохранением
    */
   const handleCheckboxChange = (field: string, checked: boolean) => {
@@ -218,6 +226,17 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
                 </span>
               </div>
               
+              <Button
+                onClick={handleRefresh}
+                disabled={isFetching}
+                variant="outline"
+                size="sm"
+                className="flex items-center space-x-2"
+              >
+                <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
+                <span>{isFetching ? 'Обновление...' : 'Обновить'}</span>
+              </Button>
+
               <Button
                 onClick={handleSave}
                 disabled={updateMutation.isPending || !hasUnsavedChanges}
