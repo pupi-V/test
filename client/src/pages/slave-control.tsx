@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { ChargingStation } from "@shared/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { BatteryCharging, Save } from "lucide-react";
+import { BatteryCharging, Save, Wifi } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 
@@ -21,6 +21,8 @@ interface SlaveControlProps {
  */
 export default function SlaveControl({ stationId }: SlaveControlProps) {
   const { toast } = useToast();
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   
   // Состояние для всех полей slave-платы
   const [formData, setFormData] = useState({
@@ -50,11 +52,13 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
   });
 
   /**
-   * Загружаем данные станции
+   * Загружаем данные станции с автоматическим обновлением каждые 5 секунд
    */
   const { data: station, isLoading } = useQuery<ChargingStation>({
     queryKey: ['/api/stations', stationId],
     enabled: !!stationId,
+    refetchInterval: 5000, // Обновляем каждые 5 секунд для синхронизации
+    refetchIntervalInBackground: true, // Продолжаем обновлять даже когда вкладка неактивна
   });
 
   /**
@@ -66,19 +70,44 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/stations'] });
-      toast({
-        title: "Успешно",
-        description: "Данные станции обновлены",
-      });
+      setHasUnsavedChanges(false);
     },
     onError: () => {
       toast({
         title: "Ошибка",
-        description: "Не удалось обновить данные станции",
+        description: "Не удалось синхронизировать данные",
         variant: "destructive",
       });
     },
   });
+
+  /**
+   * Автоматическое сохранение с debounce задержкой
+   */
+  const scheduleAutoSave = useCallback(() => {
+    setHasUnsavedChanges(true);
+    
+    // Очищаем предыдущий таймер
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+    
+    // Устанавливаем новый таймер на 2 секунды
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      updateMutation.mutate(formData);
+    }, 2000);
+  }, [formData, updateMutation]);
+
+  /**
+   * Очищаем таймер при размонтировании компонента
+   */
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, []);
 
   /**
    * Обновляем форму при загрузке данных станции
@@ -107,25 +136,39 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
   }, [station]);
 
   /**
-   * Обработчик сохранения данных
+   * Обработчик ручного сохранения данных
    */
   const handleSave = () => {
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
     updateMutation.mutate(formData);
+    setHasUnsavedChanges(false);
   };
 
   /**
-   * Обработчик изменения checkbox
+   * Обработчик изменения checkbox с автосохранением
    */
   const handleCheckboxChange = (field: string, checked: boolean) => {
-    setFormData(prev => ({ ...prev, [field]: checked }));
+    setFormData(prev => {
+      const newData = { ...prev, [field]: checked };
+      // Запускаем автосохранение после обновления состояния
+      setTimeout(() => scheduleAutoSave(), 0);
+      return newData;
+    });
   };
 
   /**
-   * Обработчик изменения числовых полей
+   * Обработчик изменения числовых полей с автосохранением
    */
   const handleNumberChange = (field: string, value: string) => {
     const numValue = parseFloat(value) || 0;
-    setFormData(prev => ({ ...prev, [field]: numValue }));
+    setFormData(prev => {
+      const newData = { ...prev, [field]: numValue };
+      // Запускаем автосохранение после обновления состояния
+      setTimeout(() => scheduleAutoSave(), 0);
+      return newData;
+    });
   };
 
   if (isLoading || !station) {
@@ -157,13 +200,32 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              {/* Индикатор статуса синхронизации */}
+              <div className="flex items-center space-x-2 text-sm">
+                <Wifi className={`h-4 w-4 ${
+                  updateMutation.isPending 
+                    ? 'text-yellow-500 animate-pulse' 
+                    : hasUnsavedChanges 
+                      ? 'text-orange-500' 
+                      : 'text-green-500'
+                }`} />
+                <span className="text-muted-foreground">
+                  {updateMutation.isPending 
+                    ? 'Синхронизация...' 
+                    : hasUnsavedChanges 
+                      ? 'Есть изменения' 
+                      : 'Синхронизировано'}
+                </span>
+              </div>
+              
               <Button
                 onClick={handleSave}
-                disabled={updateMutation.isPending}
+                disabled={updateMutation.isPending || !hasUnsavedChanges}
+                variant={hasUnsavedChanges ? "default" : "outline"}
                 className="flex items-center space-x-2"
               >
                 <Save className="h-4 w-4" />
-                <span>{updateMutation.isPending ? 'Сохранение...' : 'Сохранить'}</span>
+                <span>Сохранить сейчас</span>
               </Button>
               <ThemeToggle />
             </div>
@@ -173,104 +235,107 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           
-          {/* Car Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg text-foreground">Car</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="carConnection"
-                  checked={formData.carConnection}
-                  onCheckedChange={(checked) => 
-                    handleCheckboxChange('carConnection', checked as boolean)
-                  }
-                />
-                <Label htmlFor="carConnection" className="text-foreground">
-                  Подключение
-                </Label>
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="carChargingPermission"
-                  checked={formData.carChargingPermission}
-                  onCheckedChange={(checked) => 
-                    handleCheckboxChange('carChargingPermission', checked as boolean)
-                  }
-                />
-                <Label htmlFor="carChargingPermission" className="text-foreground">
-                  Разрешение заряда
-                </Label>
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="carError"
-                  checked={formData.carError}
-                  onCheckedChange={(checked) => 
-                    handleCheckboxChange('carError', checked as boolean)
-                  }
-                />
-                <Label htmlFor="carError" className="text-foreground">
-                  Ошибка
-                </Label>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Верхний ряд: Car и Master */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:col-span-2">
+            {/* Car Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg text-foreground">Car</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="carConnection"
+                    checked={formData.carConnection}
+                    onCheckedChange={(checked) => 
+                      handleCheckboxChange('carConnection', checked as boolean)
+                    }
+                  />
+                  <Label htmlFor="carConnection" className="text-foreground">
+                    Подключение
+                  </Label>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="carChargingPermission"
+                    checked={formData.carChargingPermission}
+                    onCheckedChange={(checked) => 
+                      handleCheckboxChange('carChargingPermission', checked as boolean)
+                    }
+                  />
+                  <Label htmlFor="carChargingPermission" className="text-foreground">
+                    Разрешение заряда
+                  </Label>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="carError"
+                    checked={formData.carError}
+                    onCheckedChange={(checked) => 
+                      handleCheckboxChange('carError', checked as boolean)
+                    }
+                  />
+                  <Label htmlFor="carError" className="text-foreground">
+                    Ошибка
+                  </Label>
+                </div>
+              </CardContent>
+            </Card>
 
-          {/* Master Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg text-foreground">Master</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="masterOnline"
-                  checked={formData.masterOnline}
-                  onCheckedChange={(checked) => 
-                    handleCheckboxChange('masterOnline', checked as boolean)
-                  }
-                />
-                <Label htmlFor="masterOnline" className="text-foreground">
-                  В сети
-                </Label>
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="masterChargingPermission"
-                  checked={formData.masterChargingPermission}
-                  onCheckedChange={(checked) => 
-                    handleCheckboxChange('masterChargingPermission', checked as boolean)
-                  }
-                />
-                <Label htmlFor="masterChargingPermission" className="text-foreground">
-                  Разрешение заряда
-                </Label>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="masterAvailablePower" className="text-foreground">
-                  Доступная мощность (кВт)
-                </Label>
-                <Input
-                  id="masterAvailablePower"
-                  type="number"
-                  step="0.1"
-                  value={formData.masterAvailablePower}
-                  onChange={(e) => handleNumberChange('masterAvailablePower', e.target.value)}
-                />
-              </div>
-            </CardContent>
-          </Card>
+            {/* Master Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg text-foreground">Master</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="masterOnline"
+                    checked={formData.masterOnline}
+                    onCheckedChange={(checked) => 
+                      handleCheckboxChange('masterOnline', checked as boolean)
+                    }
+                  />
+                  <Label htmlFor="masterOnline" className="text-foreground">
+                    В сети
+                  </Label>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="masterChargingPermission"
+                    checked={formData.masterChargingPermission}
+                    onCheckedChange={(checked) => 
+                      handleCheckboxChange('masterChargingPermission', checked as boolean)
+                    }
+                  />
+                  <Label htmlFor="masterChargingPermission" className="text-foreground">
+                    Разрешение заряда
+                  </Label>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="masterAvailablePower" className="text-foreground">
+                    Доступная мощность (кВт)
+                  </Label>
+                  <Input
+                    id="masterAvailablePower"
+                    type="number"
+                    step="0.1"
+                    value={formData.masterAvailablePower}
+                    onChange={(e) => handleNumberChange('masterAvailablePower', e.target.value)}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
-          {/* Charger Section */}
-          <Card>
+          {/* Нижний ряд: Charger во всю ширину */}
+          <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle className="text-lg text-foreground">Charger</CardTitle>
             </CardHeader>
