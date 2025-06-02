@@ -40,7 +40,7 @@ export default function StationCard({ station, onClick, onDeleteRequest }: Stati
             <Button
               variant="ghost"
               size="sm"
-              className="text-gray-400 hover:text-blue-600 p-1 h-auto"
+              className="text-muted-foreground hover:text-primary p-1 h-auto"
               onClick={handleEdit}
             >
               <Edit className="h-4 w-4" />
@@ -48,7 +48,7 @@ export default function StationCard({ station, onClick, onDeleteRequest }: Stati
             <Button
               variant="ghost"
               size="sm"
-              className="text-gray-400 hover:text-red-600 p-1 h-auto"
+              className="text-muted-foreground hover:text-destructive p-1 h-auto"
               onClick={handleDelete}
             >
               <Trash2 className="h-4 w-4" />
@@ -56,21 +56,21 @@ export default function StationCard({ station, onClick, onDeleteRequest }: Stati
           </div>
         </div>
         
-        <h3 className="text-lg font-medium text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">
+        <h3 className="text-lg font-medium text-foreground mb-1 group-hover:text-primary transition-colors">
           {station.displayName}
         </h3>
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-sm text-muted-foreground mb-4">
           {station.technicalName}
         </p>
         
         <div className="space-y-3">
           <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-600">Макс. мощность:</span>
-            <span className="text-sm font-medium">{station.maxPower} кВт</span>
+            <span className="text-sm text-muted-foreground">Макс. мощность:</span>
+            <span className="text-sm font-medium text-foreground">{station.maxPower} кВт</span>
           </div>
           
           <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-600">Статус:</span>
+            <span className="text-sm text-muted-foreground">Статус:</span>
             <div className="flex items-center">
               <div className={`w-2 h-2 rounded-full mr-2 ${getStatusBgColor(station.status)}`}></div>
               <span className={`text-sm font-medium ${getStatusColor(station.status)}`}>
@@ -80,14 +80,14 @@ export default function StationCard({ station, onClick, onDeleteRequest }: Stati
           </div>
           
           <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-600">Текущая мощность:</span>
-            <span className={`text-sm font-medium ${station.status === "charging" ? "text-green-600" : "text-gray-600"}`}>
+            <span className="text-sm text-muted-foreground">Текущая мощность:</span>
+            <span className={`text-sm font-medium ${station.status === "charging" ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}`}>
               {station.status === "offline" ? "- кВт" : `${station.currentPower} кВт`}
             </span>
           </div>
           
           {/* Power Usage Bar */}
-          <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
+          <div className="w-full bg-muted rounded-full h-2 mt-3">
             <div 
               className={`h-2 rounded-full transition-all duration-300 ${getStatusBgColor(station.status)}`}
               style={{ width: `${powerPercentage}%` }}
