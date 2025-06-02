@@ -5,12 +5,13 @@ import { ChargingStation } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
-import { BatteryCharging, Plus, RefreshCw } from "lucide-react";
+import { BatteryCharging, Plus, RefreshCw, Settings } from "lucide-react";
 import StationCard from "@/components/station-card";
 import AddStationModal from "@/components/add-station-modal";
 import StationDetailsModal from "@/components/station-details-modal";
 import DeleteConfirmationModal from "@/components/delete-confirmation-modal";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { useLocation } from "wouter";
 
 /**
  * Главная страница дашборда с плитками зарядных станций
