@@ -138,7 +138,25 @@ export class JSONStorage implements IStorage {
       status: "available",    // Начальный статус = доступна
       type: insertStation.type || "undefined",        // Устанавливаем тип или "undefined"
       ipAddress: insertStation.ipAddress || null,     // Обрабатываем undefined
-      description: insertStation.description || null  // Обрабатываем undefined
+      description: insertStation.description || null, // Обрабатываем undefined
+      
+      // Данные для slave-платы с начальными значениями
+      carConnection: false,
+      carChargingPermission: false,
+      carError: false,
+      masterOnline: false,
+      masterChargingPermission: false,
+      masterAvailablePower: 0,
+      voltagePhase1: 0,
+      voltagePhase2: 0,
+      voltagePhase3: 0,
+      currentPhase1: 0,
+      currentPhase2: 0,
+      currentPhase3: 0,
+      chargerPower: 0,
+      singlePhaseConnection: false,
+      powerOverconsumption: false,
+      fixedPower: false,
     };
     
     // Сохраняем в память и файл

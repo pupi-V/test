@@ -2,12 +2,34 @@
   {
     "displayName": "casim",
     "technicalName": "victor",
-    "type": "undefined",
+    "type": "master",
     "maxPower": 220,
     "status": "charging",
     "ipAddress": "",
     "description": "",
     "id": 1,
-    "currentPower": 8.6
+    "currentPower": 35
+  },
+  {
+    "displayName": "аммс",
+    "technicalName": "см",
+    "type": "slave",
+    "maxPower": 22,
+    "status": "maintenance",
+    "ipAddress": null,
+    "description": null,
+    "id": 2,
+    "currentPower": 0
+  },
+  {
+    "displayName": "",
+    "technicalName": "",
+    "type": "undefined",
+    "maxPower": 22,
+    "status": "available",
+    "ipAddress": null,
+    "description": null,
+    "id": 3,
+    "currentPower": 0
   }
 ]

@@ -1,5 +1,5 @@
 // Импорты для работы с базой данных и валидацией
-import { pgTable, text, serial, integer, real } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, real, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -34,6 +34,31 @@ export const chargingStations = pgTable("charging_stations", {
   
   // Дополнительное описание станции (опционально)
   description: text("description"),
+  
+  // Данные для slave-платы
+  // Car секция
+  carConnection: boolean("car_connection").notNull().default(false),
+  carChargingPermission: boolean("car_charging_permission").notNull().default(false),
+  carError: boolean("car_error").notNull().default(false),
+  
+  // Master секция
+  masterOnline: boolean("master_online").notNull().default(false),
+  masterChargingPermission: boolean("master_charging_permission").notNull().default(false),
+  masterAvailablePower: real("master_available_power").notNull().default(0),
+  
+  // Charger секция - таблица мощности
+  voltagePhase1: real("voltage_phase1").notNull().default(0),
+  voltagePhase2: real("voltage_phase2").notNull().default(0),
+  voltagePhase3: real("voltage_phase3").notNull().default(0),
+  currentPhase1: real("current_phase1").notNull().default(0),
+  currentPhase2: real("current_phase2").notNull().default(0),
+  currentPhase3: real("current_phase3").notNull().default(0),
+  chargerPower: real("charger_power").notNull().default(0),
+  
+  // Charger статус
+  singlePhaseConnection: boolean("single_phase_connection").notNull().default(false),
+  powerOverconsumption: boolean("power_overconsumption").notNull().default(false),
+  fixedPower: boolean("fixed_power").notNull().default(false),
 });
 
 /**
