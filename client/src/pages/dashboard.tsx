@@ -129,12 +129,11 @@ export default function Dashboard() {
         {/* Controls Section */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h2 className="text-2xl font-medium text-gray-900 mb-2">Обзор станций</h2>
-            <p className="text-gray-600">Управление и мониторинг зарядных станций</p>
+            <h2 className="text-2xl font-medium text-foreground mb-2">Обзор станций</h2>
+            <p className="text-muted-foreground">Управление и мониторинг зарядных станций</p>
           </div>
           <Button 
             onClick={() => setIsAddModalOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium"
           >
             <Plus className="mr-2 h-4 w-4" />
             Добавить станцию
@@ -146,7 +145,7 @@ export default function Dashboard() {
           <CardContent className="pt-4">
             <div className="flex flex-wrap gap-4">
               <div className="flex items-center space-x-2">
-                <label className="text-sm font-medium text-gray-600">Фильтр по типу:</label>
+                <label className="text-sm font-medium text-foreground">Фильтр по типу:</label>
                 <Select value={typeFilter} onValueChange={setTypeFilter}>
                   <SelectTrigger className="w-48">
                     <SelectValue />
@@ -159,7 +158,7 @@ export default function Dashboard() {
                 </Select>
               </div>
               <div className="flex items-center space-x-2">
-                <label className="text-sm font-medium text-gray-600">Статус:</label>
+                <label className="text-sm font-medium text-foreground">Статус:</label>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger className="w-48">
                     <SelectValue />
@@ -181,9 +180,9 @@ export default function Dashboard() {
         {filteredStations.length === 0 ? (
           <Card className="text-center py-12">
             <CardContent>
-              <BatteryCharging className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Нет станций</h3>
-              <p className="text-gray-600 mb-4">
+              <BatteryCharging className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium text-foreground mb-2">Нет станций</h3>
+              <p className="text-muted-foreground mb-4">
                 {stations.length === 0 
                   ? "Начните с добавления первой зарядной станции"
                   : "Нет станций, соответствующих выбранным фильтрам"
