@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { BatteryCharging, Server, Cpu, Settings } from "lucide-react";
 import { useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
+import type { ChargingStation } from "@shared/schema";
 
 /**
  * Страница выбора типа платы
@@ -13,18 +15,51 @@ export default function BoardSelector() {
   const [, setLocation] = useLocation();
 
   /**
+   * Загружаем список станций для автоматического определения типа платы
+   */
+  const { data: stations } = useQuery<ChargingStation[]>({
+    queryKey: ['/api/stations'],
+  });
+
+  /**
+   * Автоматическое определение типа платы при загрузке
+   * В реальной системе это будет определяться аппаратно
+   */
+  useEffect(() => {
+    if (stations && stations.length > 0) {
+      // Проверяем есть ли в системе master-станции
+      const hasMasterStations = stations.some(station => station.type === "master");
+      
+      // Если нет master-станций, автоматически переходим на slave-интерфейс
+      if (!hasMasterStations) {
+        const firstSlaveStation = stations.find(station => station.type === "slave");
+        if (firstSlaveStation) {
+          setLocation(`/slave/${firstSlaveStation.id}`);
+          return;
+        }
+      }
+    }
+  }, [stations, setLocation]);
+
+  /**
    * Переход к dashboard для master-плат
    */
   const handleMasterBoard = () => {
-    setLocation("/");
+    setLocation("/dashboard");
   };
 
   /**
    * Переход к интерфейсу slave-платы
    */
   const handleSlaveBoard = () => {
-    // Используем первую доступную станцию для демонстрации
-    setLocation("/slave/1");
+    // Находим первую доступную slave-станцию
+    const slaveStation = stations?.find(station => station.type === "slave");
+    if (slaveStation) {
+      setLocation(`/slave/${slaveStation.id}`);
+    } else {
+      // Если нет slave-станций, используем первую доступную
+      setLocation("/slave/1");
+    }
   };
 
   return (

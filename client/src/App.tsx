@@ -16,7 +16,8 @@ function Router() {
       <Route path="/slave/:id">
         {(params) => <SlaveControl stationId={parseInt(params.id)} />}
       </Route>
-      <Route path="/" component={Dashboard} />
+      <Route path="/dashboard" component={Dashboard} />
+      <Route path="/" component={BoardSelector} />
       <Route component={NotFound} />
     </Switch>
   );
