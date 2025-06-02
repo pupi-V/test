@@ -2,7 +2,7 @@
   {
     "displayName": "test",
     "technicalName": "test1",
-    "type": "master",
+    "type": "slave",
     "maxPower": 20,
     "status": "offline",
     "ipAddress": "",
@@ -19,6 +19,17 @@
     "ipAddress": "",
     "description": "",
     "id": 4,
+    "currentPower": 0
+  },
+  {
+    "displayName": "",
+    "technicalName": "",
+    "type": "slave",
+    "maxPower": 22,
+    "status": "available",
+    "ipAddress": null,
+    "description": null,
+    "id": 5,
     "currentPower": 0
   }
 ]

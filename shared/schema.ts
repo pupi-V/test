@@ -17,8 +17,8 @@ export const chargingStations = pgTable("charging_stations", {
   // Техническое имя станции (например "CS-MASTER-001"), должно быть уникальным
   technicalName: text("technical_name").notNull().unique(),
   
-  // Тип станции: master (главная) или slave (подчиненная)
-  type: text("type", { enum: ["master", "slave"] }).notNull(),
+  // Тип станции: master (главная), slave (подчиненная) или undefined (неопределенный)
+  type: text("type", { enum: ["master", "slave", "undefined"] }).notNull().default("undefined"),
   
   // Максимальная мощность станции в киловаттах
   maxPower: real("max_power").notNull(),

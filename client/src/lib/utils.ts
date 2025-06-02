@@ -36,11 +36,27 @@ export function getStatusBgColor(status: string) {
 }
 
 export function getTypeColor(type: string) {
-  return type === "master" ? "station-master" : "station-slave";
+  switch (type) {
+    case "master":
+      return "station-master";
+    case "slave":
+      return "station-slave";
+    case "undefined":
+    default:
+      return "text-gray-500";
+  }
 }
 
 export function getTypeBgColor(type: string) {
-  return type === "master" ? "bg-station-master" : "bg-station-slave";
+  switch (type) {
+    case "master":
+      return "bg-station-master";
+    case "slave":
+      return "bg-station-slave";
+    case "undefined":
+    default:
+      return "bg-gray-400";
+  }
 }
 
 export function getStatusLabel(status: string) {
@@ -59,7 +75,15 @@ export function getStatusLabel(status: string) {
 }
 
 export function getTypeLabel(type: string) {
-  return type === "master" ? "MASTER" : "SLAVE";
+  switch (type) {
+    case "master":
+      return "MASTER";
+    case "slave":
+      return "SLAVE";
+    case "undefined":
+    default:
+      return "НЕОПРЕДЕЛЕН";
+  }
 }
 
 export function calculatePowerPercentage(current: number, max: number) {

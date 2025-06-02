@@ -116,6 +116,7 @@ export class JSONStorage implements IStorage {
       id,
       currentPower: 0,        // Начальная мощность = 0
       status: "available",    // Начальный статус = доступна
+      type: insertStation.type || "undefined",        // Устанавливаем тип или "undefined"
       ipAddress: insertStation.ipAddress || null,     // Обрабатываем undefined
       description: insertStation.description || null  // Обрабатываем undefined
     };

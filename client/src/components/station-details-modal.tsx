@@ -224,7 +224,7 @@ export default function StationDetailsModal({ station, onClose, onDeleteRequest 
                     Тип станции
                   </label>
                   <Input 
-                    value={station.type === "master" ? "Master станция" : "Slave станция"}
+                    value={station.type === "master" ? "Master станция" : station.type === "slave" ? "Slave станция" : "Неопределенный тип"}
                     disabled
                     className="bg-gray-100 cursor-not-allowed mt-2"
                   />

@@ -44,7 +44,7 @@ export default function AddStationModal({ open, onOpenChange }: AddStationModalP
     defaultValues: {
       displayName: "",
       technicalName: "",
-      type: "master",
+      type: "undefined",
       maxPower: 22,
       status: "available",
       ipAddress: "",
@@ -116,27 +116,17 @@ export default function AddStationModal({ open, onOpenChange }: AddStationModalP
               )}
             />
             
-            <FormField
-              control={form.control}
-              name="type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Тип станции</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Выберите тип" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="master">Master станция</SelectItem>
-                      <SelectItem value="slave">Slave станция</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div>
+              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                Тип станции
+              </label>
+              <Input 
+                value="Неопределенный"
+                disabled
+                className="bg-gray-100 cursor-not-allowed mt-2"
+              />
+              <p className="text-sm text-gray-500 mt-1">Тип станции будет определен автоматически системой</p>
+            </div>
             
             <FormField
               control={form.control}
@@ -167,7 +157,7 @@ export default function AddStationModal({ open, onOpenChange }: AddStationModalP
                 <FormItem>
                   <FormLabel>IP адрес (опционально)</FormLabel>
                   <FormControl>
-                    <Input placeholder="192.168.1.101" {...field} />
+                    <Input placeholder="192.168.1.101" {...field} value={field.value || ""} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -184,7 +174,8 @@ export default function AddStationModal({ open, onOpenChange }: AddStationModalP
                     <Textarea 
                       placeholder="Дополнительная информация о станции..."
                       rows={3}
-                      {...field} 
+                      {...field}
+                      value={field.value || ""}
                     />
                   </FormControl>
                   <FormMessage />
