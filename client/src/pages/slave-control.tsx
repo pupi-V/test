@@ -23,6 +23,7 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
   const { toast } = useToast();
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasInitialized = useRef(false);
+  const justSaved = useRef(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   
   // Состояние для всех полей slave-платы
@@ -88,10 +89,10 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
 
   /**
    * Обновляем форму при загрузке данных станции
-   * Простая логика как в master-интерфейсе
+   * Не обновляем сразу после сохранения, чтобы предотвратить сброс изменений
    */
   useEffect(() => {
-    if (station) {
+    if (station && !justSaved.current) {
       setFormData({
         carConnection: station.carConnection || false,
         carChargingPermission: station.carChargingPermission || false,
@@ -111,12 +112,20 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
         fixedPower: station.fixedPower || false,
       });
     }
+    
+    // Сбрасываем флаг через короткое время после сохранения
+    if (justSaved.current) {
+      setTimeout(() => {
+        justSaved.current = false;
+      }, 1000);
+    }
   }, [station]);
 
   /**
    * Обработчик ручного сохранения данных
    */
   const handleSave = () => {
+    justSaved.current = true;
     updateMutation.mutate(formData);
     setHasUnsavedChanges(false);
   };
