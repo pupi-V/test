@@ -1,16 +1,5 @@
 [
   {
-    "displayName": "test",
-    "technicalName": "test1",
-    "type": "slave",
-    "maxPower": 20,
-    "status": "offline",
-    "ipAddress": "",
-    "description": "",
-    "id": 2,
-    "currentPower": 0
-  },
-  {
     "displayName": "вы",
     "technicalName": "ывы",
     "type": "master",
@@ -30,6 +19,17 @@
     "ipAddress": null,
     "description": null,
     "id": 5,
+    "currentPower": 0
+  },
+  {
+    "displayName": "",
+    "technicalName": "",
+    "type": "undefined",
+    "maxPower": 22,
+    "status": "available",
+    "ipAddress": "",
+    "description": "",
+    "id": 6,
     "currentPower": 0
   }
 ]

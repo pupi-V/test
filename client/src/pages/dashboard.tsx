@@ -1,11 +1,11 @@
 // Импорты для React хуков и компонентов
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChargingStation } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
-import { BatteryCharging, Plus } from "lucide-react";
+import { BatteryCharging, Plus, RefreshCw } from "lucide-react";
 import StationCard from "@/components/station-card";
 import AddStationModal from "@/components/add-station-modal";
 import StationDetailsModal from "@/components/station-details-modal";
@@ -25,11 +25,14 @@ export default function Dashboard() {
   const [selectedStation, setSelectedStation] = useState<ChargingStation | null>(null); // Выбранная станция для детального просмотра
   const [stationToDelete, setStationToDelete] = useState<ChargingStation | null>(null); // Станция для удаления
 
+  // Клиент для работы с кэшем запросов
+  const queryClient = useQueryClient();
+
   /**
    * Загружаем список всех зарядных станций
    * Автоматически обновляется каждые 5 секунд для отображения актуальных данных
    */
-  const { data: stations = [], isLoading } = useQuery<ChargingStation[]>({
+  const { data: stations = [], isLoading, isFetching, refetch } = useQuery<ChargingStation[]>({
     queryKey: ["/api/stations"],
     refetchInterval: 5000, // Автообновление каждые 5 секунд
   });
@@ -58,6 +61,14 @@ export default function Dashboard() {
    */
   const handleDeleteRequest = (station: ChargingStation) => {
     setStationToDelete(station);
+  };
+
+  /**
+   * Принудительное обновление данных
+   * Очищает кэш и загружает свежие данные с сервера
+   */
+  const handleRefresh = async () => {
+    await refetch();
   };
 
   if (isLoading) {
@@ -96,6 +107,16 @@ export default function Dashboard() {
               <span className="text-sm text-gray-600">
                 Активных: <span className="font-medium text-green-600">{activeStations.length}</span>
               </span>
+              <Button
+                onClick={handleRefresh}
+                disabled={isFetching}
+                variant="outline"
+                size="sm"
+                className="flex items-center space-x-2"
+              >
+                <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
+                <span>{isFetching ? 'Обновление...' : 'Обновить'}</span>
+              </Button>
             </div>
           </div>
         </div>
