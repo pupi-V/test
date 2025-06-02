@@ -1,35 +1,13 @@
 [
   {
-    "displayName": "вы",
-    "technicalName": "ывы",
-    "type": "master",
-    "maxPower": 22,
-    "status": "available",
+    "displayName": "casim",
+    "technicalName": "victor",
+    "type": "undefined",
+    "maxPower": 220,
+    "status": "charging",
     "ipAddress": "",
     "description": "",
-    "id": 4,
-    "currentPower": 0
-  },
-  {
-    "displayName": "",
-    "technicalName": "",
-    "type": "master",
-    "maxPower": 22,
-    "status": "available",
-    "ipAddress": null,
-    "description": null,
-    "id": 5,
-    "currentPower": 0
-  },
-  {
-    "displayName": "",
-    "technicalName": "",
-    "type": "master",
-    "maxPower": 22,
-    "status": "available",
-    "ipAddress": "",
-    "description": "",
-    "id": 6,
-    "currentPower": 0
+    "id": 1,
+    "currentPower": 8.6
   }
 ]

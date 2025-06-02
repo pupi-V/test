@@ -10,6 +10,7 @@ import StationCard from "@/components/station-card";
 import AddStationModal from "@/components/add-station-modal";
 import StationDetailsModal from "@/components/station-details-modal";
 import DeleteConfirmationModal from "@/components/delete-confirmation-modal";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 /**
  * Главная страница дашборда с плитками зарядных станций
@@ -73,13 +74,13 @@ export default function Dashboard() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <div className="animate-pulse">
-          <div className="bg-white h-16 shadow-sm border-b border-gray-200"></div>
+          <div className="bg-card h-16 shadow-sm border-b border-border"></div>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {[...Array(8)].map((_, i) => (
-                <div key={i} className="bg-white rounded-xl shadow-sm h-64"></div>
+                <div key={i} className="bg-card rounded-xl shadow-sm h-64"></div>
               ))}
             </div>
           </div>
@@ -89,23 +90,23 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
+      <header className="bg-card shadow-sm border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <BatteryCharging className="text-blue-600 text-2xl mr-3" />
-              <h1 className="text-xl font-medium text-gray-900">
+              <BatteryCharging className="text-primary text-2xl mr-3" />
+              <h1 className="text-xl font-medium text-foreground">
                 Система управления зарядными станциями
               </h1>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">
-                Станций: <span className="font-medium">{stations.length}</span>
+              <span className="text-sm text-muted-foreground">
+                Станций: <span className="font-medium text-foreground">{stations.length}</span>
               </span>
-              <span className="text-sm text-gray-600">
-                Активных: <span className="font-medium text-green-600">{activeStations.length}</span>
+              <span className="text-sm text-muted-foreground">
+                Активных: <span className="font-medium text-green-600 dark:text-green-400">{activeStations.length}</span>
               </span>
               <Button
                 onClick={handleRefresh}
@@ -117,6 +118,7 @@ export default function Dashboard() {
                 <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
                 <span>{isFetching ? 'Обновление...' : 'Обновить'}</span>
               </Button>
+              <ThemeToggle />
             </div>
           </div>
         </div>

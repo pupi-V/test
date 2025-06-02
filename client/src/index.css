@@ -38,25 +38,37 @@
 }
 
 .dark {
-  --background: 240 10% 3.9%;
-  --foreground: 0 0% 98%;
-  --muted: 240 3.7% 15.9%;
-  --muted-foreground: 240 5% 64.9%;
-  --popover: 240 10% 3.9%;
-  --popover-foreground: 0 0% 98%;
-  --card: 240 10% 3.9%;
-  --card-foreground: 0 0% 98%;
-  --border: 240 3.7% 15.9%;
-  --input: 240 3.7% 15.9%;
-  --primary: 207 90% 54%;
-  --primary-foreground: 211 100% 99%;
-  --secondary: 240 3.7% 15.9%;
-  --secondary-foreground: 0 0% 98%;
-  --accent: 240 3.7% 15.9%;
-  --accent-foreground: 0 0% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 0 0% 98%;
-  --ring: 240 4.9% 83.9%;
+  --background: 120 20% 8%; /* Dark green-black background */
+  --foreground: 120 10% 95%; /* Light green-white text */
+  --muted: 120 15% 12%; /* Dark green muted */
+  --muted-foreground: 120 8% 70%; /* Light green muted text */
+  --popover: 120 20% 10%; /* Dark green popover */
+  --popover-foreground: 120 10% 95%; /* Light green popover text */
+  --card: 120 18% 10%; /* Dark green card */
+  --card-foreground: 120 10% 95%; /* Light green card text */
+  --border: 120 15% 20%; /* Dark green border */
+  --input: 120 15% 15%; /* Dark green input */
+  --primary: 142 76% 36%; /* Bright green primary */
+  --primary-foreground: 120 15% 95%; /* Light text on primary */
+  --secondary: 120 15% 15%; /* Dark green secondary */
+  --secondary-foreground: 120 10% 90%; /* Light green secondary text */
+  --accent: 120 15% 18%; /* Dark green accent */
+  --accent-foreground: 120 10% 90%; /* Light green accent text */
+  --destructive: 0 62.8% 45%; /* Red destructive */
+  --destructive-foreground: 0 0% 98%; /* White on red */
+  --ring: 142 76% 36%; /* Green ring */
+
+  /* Dark theme custom colors for charging stations */
+  --station-master: 142 76% 45%; /* Bright green for master */
+  --station-slave: 45 93% 55%; /* Bright orange for slave */
+  --status-charging: 142 76% 50%; /* Bright green charging */
+  --status-available: 120 15% 50%; /* Medium green available */
+  --status-offline: 0 84% 55%; /* Bright red offline */
+  --status-maintenance: 45 93% 55%; /* Bright orange maintenance */
+  --surface-1: 120 20% 8%; /* Dark green surface */
+  --surface-2: 120 15% 12%; /* Slightly lighter green surface */
+  --text-primary: 120 10% 95%; /* Light green text */
+  --text-secondary: 120 8% 70%; /* Medium green text */
 }
 
 @layer base {
