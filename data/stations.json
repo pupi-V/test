@@ -20,7 +20,7 @@
     "description": null,
     "id": 2,
     "currentPower": 0,
-    "carConnection": true,
+    "carConnection": false,
     "carChargingPermission": false,
     "carError": false,
     "masterOnline": false,

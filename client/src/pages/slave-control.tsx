@@ -22,6 +22,7 @@ interface SlaveControlProps {
 export default function SlaveControl({ stationId }: SlaveControlProps) {
   const { toast } = useToast();
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hasInitialized = useRef(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   
   // Состояние для всех полей slave-платы
@@ -72,7 +73,8 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/stations'] });
       setHasUnsavedChanges(false);
-      // Возобновляем автоматические обновления после сохранения
+      // Сбрасываем флаг инициализации, чтобы разрешить обновления с сервера
+      hasInitialized.current = false;
     },
     onError: () => {
       toast({
@@ -112,11 +114,12 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
   }, []);
 
   /**
-   * Обновляем форму при загрузке данных станции
-   * Только если нет несохраненных изменений
+   * Обновляем форму при первоначальной загрузке данных станции
+   * Не обновляем при наличии несохраненных изменений
    */
+  
   useEffect(() => {
-    if (station && !hasUnsavedChanges) {
+    if (station && (!hasInitialized.current || !hasUnsavedChanges)) {
       setFormData({
         carConnection: station.carConnection || false,
         carChargingPermission: station.carChargingPermission || false,
@@ -135,6 +138,7 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
         powerOverconsumption: station.powerOverconsumption || false,
         fixedPower: station.fixedPower || false,
       });
+      hasInitialized.current = true;
     }
   }, [station, hasUnsavedChanges]);
 
