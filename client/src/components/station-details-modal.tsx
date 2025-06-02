@@ -47,7 +47,6 @@ export default function StationDetailsModal({ station, onClose, onDeleteRequest 
     defaultValues: {
       displayName: "",
       technicalName: "",
-      type: "master",
       maxPower: 22,
       status: "available",
       ipAddress: "",
@@ -60,7 +59,6 @@ export default function StationDetailsModal({ station, onClose, onDeleteRequest 
       form.reset({
         displayName: station.displayName,
         technicalName: station.technicalName,
-        type: station.type,
         maxPower: station.maxPower,
         status: station.status,
         ipAddress: station.ipAddress || "",
@@ -221,27 +219,17 @@ export default function StationDetailsModal({ station, onClose, onDeleteRequest 
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Тип станции</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="master">Master станция</SelectItem>
-                          <SelectItem value="slave">Slave станция</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div>
+                  <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Тип станции
+                  </label>
+                  <Input 
+                    value={station.type === "master" ? "Master станция" : "Slave станция"}
+                    disabled
+                    className="bg-gray-100 cursor-not-allowed mt-2"
+                  />
+                  <p className="text-sm text-gray-500 mt-1">Тип станции нельзя изменить после создания</p>
+                </div>
                 
                 <FormField
                   control={form.control}
@@ -272,7 +260,7 @@ export default function StationDetailsModal({ station, onClose, onDeleteRequest 
                   <FormItem>
                     <FormLabel>IP адрес</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input {...field} value={field.value || ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -289,7 +277,8 @@ export default function StationDetailsModal({ station, onClose, onDeleteRequest 
                       <Textarea 
                         rows={3} 
                         placeholder="Дополнительная информация о станции..."
-                        {...field} 
+                        {...field}
+                        value={field.value || ""}
                       />
                     </FormControl>
                     <FormMessage />

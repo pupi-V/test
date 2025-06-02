@@ -47,10 +47,11 @@ export const insertChargingStationSchema = createInsertSchema(chargingStations).
 
 /**
  * Схема валидации для обновления существующей станции
- * Все поля опциональны, исключается только ID
+ * Все поля опциональны, исключается ID и тип станции
  */
 export const updateChargingStationSchema = createInsertSchema(chargingStations).omit({
-  id: true, // ID не может быть изменен
+  id: true,   // ID не может быть изменен
+  type: true, // Тип станции не может быть изменен после создания
 }).partial(); // Все поля становятся опциональными
 
 // Типы TypeScript для использования в коде
