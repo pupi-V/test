@@ -73,10 +73,13 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/stations'] });
       setHasUnsavedChanges(false);
-      toast({
-        title: "Успешно",
-        description: "Данные станции обновлены",
-      });
+      // Показываем уведомление только при ручном сохранении
+      if (!justSaved.current) {
+        toast({
+          title: "Успешно",
+          description: "Данные станции обновлены",
+        });
+      }
     },
     onError: () => {
       toast({
@@ -131,6 +134,35 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
   };
 
   /**
+   * Автоматическое сохранение с задержкой
+   */
+  const scheduleAutoSave = useCallback(() => {
+    setHasUnsavedChanges(true);
+    
+    // Очищаем предыдущий таймер
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+    
+    // Устанавливаем новый таймер на 2 секунды
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      justSaved.current = true;
+      updateMutation.mutate(formData);
+    }, 2000);
+  }, [formData, updateMutation]);
+
+  /**
+   * Очищаем таймер при размонтировании компонента
+   */
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  /**
    * Принудительное обновление данных
    * Очищает кэш и загружает свежие данные с сервера
    */
@@ -139,20 +171,20 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
   };
 
   /**
-   * Обработчик изменения checkbox
+   * Обработчик изменения checkbox с автосохранением
    */
   const handleCheckboxChange = (field: string, checked: boolean) => {
     setFormData(prev => ({ ...prev, [field]: checked }));
-    setHasUnsavedChanges(true);
+    scheduleAutoSave();
   };
 
   /**
-   * Обработчик изменения числовых полей
+   * Обработчик изменения числовых полей с автосохранением
    */
   const handleNumberChange = (field: string, value: string) => {
     const numValue = parseFloat(value) || 0;
     setFormData(prev => ({ ...prev, [field]: numValue }));
-    setHasUnsavedChanges(true);
+    scheduleAutoSave();
   };
 
   if (isLoading || !station) {
@@ -195,10 +227,10 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
                 }`} />
                 <span className="text-muted-foreground">
                   {updateMutation.isPending 
-                    ? 'Синхронизация...' 
+                    ? 'Сохранение...' 
                     : hasUnsavedChanges 
-                      ? 'Автообновление приостановлено' 
-                      : 'Синхронизировано'}
+                      ? 'Автосохранение через 2 сек' 
+                      : 'Все сохранено'}
                 </span>
               </div>
               
