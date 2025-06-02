@@ -66,7 +66,7 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
    */
   const updateMutation = useMutation({
     mutationFn: async (data: Partial<ChargingStation>) => {
-      return await apiRequest(`/api/stations/${stationId}`, 'PATCH', data);
+      return await apiRequest('PATCH', `/api/stations/${stationId}`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/stations'] });
