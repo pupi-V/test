@@ -53,11 +53,12 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
 
   /**
    * Загружаем данные станции с автоматическим обновлением каждые 5 секунд
+   * Автообновление отключается при наличии несохраненных изменений
    */
   const { data: station, isLoading, isFetching, refetch } = useQuery<ChargingStation>({
     queryKey: ['/api/stations', stationId],
     enabled: !!stationId,
-    refetchInterval: 5000, // Обновляем каждые 5 секунд для синхронизации
+    refetchInterval: hasUnsavedChanges ? false : 5000, // Останавливаем автообновление при несохраненных изменениях
     refetchIntervalInBackground: true, // Продолжаем обновлять даже когда вкладка неактивна
   });
 
@@ -71,6 +72,7 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/stations'] });
       setHasUnsavedChanges(false);
+      // Возобновляем автоматические обновления после сохранения
     },
     onError: () => {
       toast({
@@ -111,9 +113,10 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
 
   /**
    * Обновляем форму при загрузке данных станции
+   * Только если нет несохраненных изменений
    */
   useEffect(() => {
-    if (station) {
+    if (station && !hasUnsavedChanges) {
       setFormData({
         carConnection: station.carConnection || false,
         carChargingPermission: station.carChargingPermission || false,
@@ -133,7 +136,7 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
         fixedPower: station.fixedPower || false,
       });
     }
-  }, [station]);
+  }, [station, hasUnsavedChanges]);
 
   /**
    * Обработчик ручного сохранения данных
@@ -221,7 +224,7 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
                   {updateMutation.isPending 
                     ? 'Синхронизация...' 
                     : hasUnsavedChanges 
-                      ? 'Есть изменения' 
+                      ? 'Автообновление приостановлено' 
                       : 'Синхронизировано'}
                 </span>
               </div>

@@ -21,7 +21,7 @@
     "id": 2,
     "currentPower": 0,
     "carConnection": true,
-    "carChargingPermission": true,
+    "carChargingPermission": false,
     "carError": false,
     "masterOnline": false,
     "masterChargingPermission": false,
