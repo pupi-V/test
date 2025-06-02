@@ -2,6 +2,7 @@
 import { chargingStations, type ChargingStation, type InsertChargingStation, type UpdateChargingStation } from "@shared/schema";
 import fs from "fs/promises";
 import path from "path";
+import { watchFile } from "fs";
 
 /**
  * Интерфейс для работы с хранилищем зарядных станций
@@ -40,6 +41,8 @@ export class JSONStorage implements IStorage {
     this.currentId = 1;
     // Загружаем существующие данные при инициализации
     this.loadData();
+    // Настраиваем отслеживание изменений файла
+    this.setupFileWatcher();
   }
 
   /**
@@ -73,12 +76,29 @@ export class JSONStorage implements IStorage {
           this.currentId = station.id + 1;
         }
       });
+      
+      console.log(`Загружено ${stationsArray.length} станций из файла`);
     } catch (error) {
       // Файл не существует или поврежден - начинаем с пустых данных
+      console.log('Файл данных не найден, создаем новый');
       this.stations.clear();
       this.currentId = 1;
       await this.saveData();
     }
+  }
+
+  /**
+   * Настраивает отслеживание изменений файла данных
+   * Автоматически перезагружает данные при внешних изменениях файла
+   */
+  private setupFileWatcher() {
+    watchFile(this.dataPath, { interval: 1000 }, (curr, prev) => {
+      // Проверяем, что файл действительно изменился
+      if (curr.mtime !== prev.mtime) {
+        console.log('Обнаружены изменения в файле данных, перезагружаем...');
+        this.loadData();
+      }
+    });
   }
 
   /**

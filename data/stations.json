@@ -13,7 +13,7 @@
   {
     "displayName": "",
     "technicalName": "",
-    "type": "slave",
+    "type": "master",
     "maxPower": 22,
     "status": "available",
     "ipAddress": null,
@@ -24,7 +24,7 @@
   {
     "displayName": "",
     "technicalName": "",
-    "type": "undefined",
+    "type": "master",
     "maxPower": 22,
     "status": "available",
     "ipAddress": "",
