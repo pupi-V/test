@@ -54,13 +54,12 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
 
   /**
    * Загружаем данные станции с автоматическим обновлением каждые 5 секунд
-   * Автообновление отключается при наличии несохраненных изменений
+   * Такая же логика как в master-интерфейсе
    */
   const { data: station, isLoading, isFetching, refetch } = useQuery<ChargingStation>({
     queryKey: ['/api/stations', stationId],
     enabled: !!stationId,
-    refetchInterval: hasUnsavedChanges ? false : 5000, // Останавливаем автообновление при несохраненных изменениях
-    refetchIntervalInBackground: true, // Продолжаем обновлять даже когда вкладка неактивна
+    refetchInterval: 5000, // Автообновление каждые 5 секунд
   });
 
   /**
@@ -73,53 +72,26 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/stations'] });
       setHasUnsavedChanges(false);
-      // Сбрасываем флаг инициализации, чтобы разрешить обновления с сервера
-      hasInitialized.current = false;
+      toast({
+        title: "Успешно",
+        description: "Данные станции обновлены",
+      });
     },
     onError: () => {
       toast({
         title: "Ошибка",
-        description: "Не удалось синхронизировать данные",
+        description: "Не удалось обновить данные станции",
         variant: "destructive",
       });
     },
   });
 
   /**
-   * Автоматическое сохранение с debounce задержкой
-   */
-  const scheduleAutoSave = useCallback(() => {
-    setHasUnsavedChanges(true);
-    
-    // Очищаем предыдущий таймер
-    if (autoSaveTimeoutRef.current) {
-      clearTimeout(autoSaveTimeoutRef.current);
-    }
-    
-    // Устанавливаем новый таймер на 2 секунды
-    autoSaveTimeoutRef.current = setTimeout(() => {
-      updateMutation.mutate(formData);
-    }, 2000);
-  }, [formData, updateMutation]);
-
-  /**
-   * Очищаем таймер при размонтировании компонента
+   * Обновляем форму при загрузке данных станции
+   * Простая логика как в master-интерфейсе
    */
   useEffect(() => {
-    return () => {
-      if (autoSaveTimeoutRef.current) {
-        clearTimeout(autoSaveTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  /**
-   * Обновляем форму при первоначальной загрузке данных станции
-   * Не обновляем при наличии несохраненных изменений
-   */
-  
-  useEffect(() => {
-    if (station && (!hasInitialized.current || !hasUnsavedChanges)) {
+    if (station) {
       setFormData({
         carConnection: station.carConnection || false,
         carChargingPermission: station.carChargingPermission || false,
@@ -138,17 +110,13 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
         powerOverconsumption: station.powerOverconsumption || false,
         fixedPower: station.fixedPower || false,
       });
-      hasInitialized.current = true;
     }
-  }, [station, hasUnsavedChanges]);
+  }, [station]);
 
   /**
    * Обработчик ручного сохранения данных
    */
   const handleSave = () => {
-    if (autoSaveTimeoutRef.current) {
-      clearTimeout(autoSaveTimeoutRef.current);
-    }
     updateMutation.mutate(formData);
     setHasUnsavedChanges(false);
   };
@@ -162,28 +130,20 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
   };
 
   /**
-   * Обработчик изменения checkbox с автосохранением
+   * Обработчик изменения checkbox
    */
   const handleCheckboxChange = (field: string, checked: boolean) => {
-    setFormData(prev => {
-      const newData = { ...prev, [field]: checked };
-      // Запускаем автосохранение после обновления состояния
-      setTimeout(() => scheduleAutoSave(), 0);
-      return newData;
-    });
+    setFormData(prev => ({ ...prev, [field]: checked }));
+    setHasUnsavedChanges(true);
   };
 
   /**
-   * Обработчик изменения числовых полей с автосохранением
+   * Обработчик изменения числовых полей
    */
   const handleNumberChange = (field: string, value: string) => {
     const numValue = parseFloat(value) || 0;
-    setFormData(prev => {
-      const newData = { ...prev, [field]: numValue };
-      // Запускаем автосохранение после обновления состояния
-      setTimeout(() => scheduleAutoSave(), 0);
-      return newData;
-    });
+    setFormData(prev => ({ ...prev, [field]: numValue }));
+    setHasUnsavedChanges(true);
   };
 
   if (isLoading || !station) {
