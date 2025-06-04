@@ -328,21 +328,22 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
               </CardContent>
             </Card>
 
-            {/* Master Section */}
+            {/* Master Section - только для чтения, управляется через файлы */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg text-foreground">Master</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Только для чтения - управляется master-платой
+                </p>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="masterOnline"
                     checked={formData.masterOnline}
-                    onCheckedChange={(checked) => 
-                      handleCheckboxChange('masterOnline', checked as boolean)
-                    }
+                    disabled={true}
                   />
-                  <Label htmlFor="masterOnline" className="text-foreground">
+                  <Label htmlFor="masterOnline" className="text-muted-foreground">
                     В сети
                   </Label>
                 </div>
@@ -351,17 +352,15 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
                   <Checkbox
                     id="masterChargingPermission"
                     checked={formData.masterChargingPermission}
-                    onCheckedChange={(checked) => 
-                      handleCheckboxChange('masterChargingPermission', checked as boolean)
-                    }
+                    disabled={true}
                   />
-                  <Label htmlFor="masterChargingPermission" className="text-foreground">
+                  <Label htmlFor="masterChargingPermission" className="text-muted-foreground">
                     Разрешение заряда
                   </Label>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="masterAvailablePower" className="text-foreground">
+                  <Label htmlFor="masterAvailablePower" className="text-muted-foreground">
                     Доступная мощность (кВт)
                   </Label>
                   <Input
@@ -369,7 +368,8 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
                     type="number"
                     step="0.1"
                     value={formData.masterAvailablePower}
-                    onChange={(e) => handleNumberChange('masterAvailablePower', e.target.value)}
+                    readOnly={true}
+                    className="bg-muted text-muted-foreground cursor-not-allowed"
                   />
                 </div>
               </CardContent>
