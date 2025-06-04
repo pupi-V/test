@@ -98,27 +98,27 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
 
   /**
    * Обновляем форму при загрузке данных станции
-   * Не обновляем сразу после сохранения, чтобы предотвратить сброс изменений
+   * Всегда синхронизируем с актуальными данными с сервера
    */
   useEffect(() => {
-    if (station && !justSaved.current) {
+    if (station) {
       setFormData({
-        carConnection: station.carConnection || false,
-        carChargingPermission: station.carChargingPermission || false,
-        carError: station.carError || false,
-        masterOnline: station.masterOnline || false,
-        masterChargingPermission: station.masterChargingPermission || false,
-        masterAvailablePower: station.masterAvailablePower || 0,
-        voltagePhase1: station.voltagePhase1 || 0,
-        voltagePhase2: station.voltagePhase2 || 0,
-        voltagePhase3: station.voltagePhase3 || 0,
-        currentPhase1: station.currentPhase1 || 0,
-        currentPhase2: station.currentPhase2 || 0,
-        currentPhase3: station.currentPhase3 || 0,
-        chargerPower: station.chargerPower || 0,
-        singlePhaseConnection: station.singlePhaseConnection || false,
-        powerOverconsumption: station.powerOverconsumption || false,
-        fixedPower: station.fixedPower || false,
+        carConnection: station.carConnection ?? false,
+        carChargingPermission: station.carChargingPermission ?? false,
+        carError: station.carError ?? false,
+        masterOnline: station.masterOnline ?? false,
+        masterChargingPermission: station.masterChargingPermission ?? false,
+        masterAvailablePower: station.masterAvailablePower ?? 0,
+        voltagePhase1: station.voltagePhase1 ?? 0,
+        voltagePhase2: station.voltagePhase2 ?? 0,
+        voltagePhase3: station.voltagePhase3 ?? 0,
+        currentPhase1: station.currentPhase1 ?? 0,
+        currentPhase2: station.currentPhase2 ?? 0,
+        currentPhase3: station.currentPhase3 ?? 0,
+        chargerPower: station.chargerPower ?? 0,
+        singlePhaseConnection: station.singlePhaseConnection ?? false,
+        powerOverconsumption: station.powerOverconsumption ?? false,
+        fixedPower: station.fixedPower ?? false,
       });
     }
     
@@ -126,7 +126,7 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
     if (justSaved.current) {
       setTimeout(() => {
         justSaved.current = false;
-      }, 1000);
+      }, 500);
     }
   }, [station]);
 
@@ -180,8 +180,8 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
    * Обработчик изменения checkbox с мгновенным сохранением
    */
   const handleCheckboxChange = (field: string, checked: boolean) => {
-    const updatedData = { ...formData, [field]: checked };
-    setFormData(updatedData);
+    // Обновляем локальное состояние
+    setFormData(prev => ({ ...prev, [field]: checked }));
     
     // Мгновенное сохранение переключателей
     justSaved.current = true;
