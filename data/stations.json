@@ -23,7 +23,7 @@
     "carConnection": true,
     "carChargingPermission": true,
     "carError": true,
-    "masterOnline": false,
+    "masterOnline": true,
     "masterChargingPermission": false,
     "masterAvailablePower": 0,
     "voltagePhase1": 0,

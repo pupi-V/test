@@ -55,10 +55,10 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
 
   /**
    * Загружаем данные станции с автоматическим обновлением каждые 5 секунд
-   * Такая же логика как в master-интерфейсе
+   * Используем правильный API endpoint для получения конкретной станции
    */
   const { data: station, isLoading, isFetching, refetch } = useQuery<ChargingStation>({
-    queryKey: ['/api/stations', stationId],
+    queryKey: [`/api/stations/${stationId}`],
     enabled: !!stationId,
     refetchInterval: 5000, // Автообновление каждые 5 секунд
   });
@@ -101,32 +101,29 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
    * Всегда синхронизируем с актуальными данными с сервера
    */
   useEffect(() => {
-    if (station) {
-      setFormData({
-        carConnection: station.carConnection ?? false,
-        carChargingPermission: station.carChargingPermission ?? false,
-        carError: station.carError ?? false,
-        masterOnline: station.masterOnline ?? false,
-        masterChargingPermission: station.masterChargingPermission ?? false,
-        masterAvailablePower: station.masterAvailablePower ?? 0,
-        voltagePhase1: station.voltagePhase1 ?? 0,
-        voltagePhase2: station.voltagePhase2 ?? 0,
-        voltagePhase3: station.voltagePhase3 ?? 0,
-        currentPhase1: station.currentPhase1 ?? 0,
-        currentPhase2: station.currentPhase2 ?? 0,
-        currentPhase3: station.currentPhase3 ?? 0,
-        chargerPower: station.chargerPower ?? 0,
-        singlePhaseConnection: station.singlePhaseConnection ?? false,
-        powerOverconsumption: station.powerOverconsumption ?? false,
-        fixedPower: station.fixedPower ?? false,
-      });
-    }
-    
-    // Сбрасываем флаг через короткое время после сохранения
-    if (justSaved.current) {
-      setTimeout(() => {
-        justSaved.current = false;
-      }, 500);
+    if (station && typeof station === 'object' && 'id' in station) {
+      console.log('Синхронизация формы с данными станции:', station);
+      const stationData = station as ChargingStation;
+      const newFormData = {
+        carConnection: Boolean(stationData.carConnection),
+        carChargingPermission: Boolean(stationData.carChargingPermission),
+        carError: Boolean(stationData.carError),
+        masterOnline: Boolean(stationData.masterOnline),
+        masterChargingPermission: Boolean(stationData.masterChargingPermission),
+        masterAvailablePower: Number(stationData.masterAvailablePower) || 0,
+        voltagePhase1: Number(stationData.voltagePhase1) || 0,
+        voltagePhase2: Number(stationData.voltagePhase2) || 0,
+        voltagePhase3: Number(stationData.voltagePhase3) || 0,
+        currentPhase1: Number(stationData.currentPhase1) || 0,
+        currentPhase2: Number(stationData.currentPhase2) || 0,
+        currentPhase3: Number(stationData.currentPhase3) || 0,
+        chargerPower: Number(stationData.chargerPower) || 0,
+        singlePhaseConnection: Boolean(stationData.singlePhaseConnection),
+        powerOverconsumption: Boolean(stationData.powerOverconsumption),
+        fixedPower: Boolean(stationData.fixedPower),
+      };
+      console.log('Новые данные формы:', newFormData);
+      setFormData(newFormData);
     }
   }, [station]);
 
@@ -218,10 +215,10 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
               <BatteryCharging className="text-primary text-2xl mr-3" />
               <div>
                 <h1 className="text-xl font-medium text-foreground">
-                  {station.displayName}
+                  {(station as ChargingStation).displayName}
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                  {station.technicalName}
+                  {(station as ChargingStation).technicalName}
                 </p>
               </div>
             </div>
