@@ -24,16 +24,16 @@ echo "🚀 Запуск симуляторов..."
 
 # Master плата (ID 1)
 echo "Запуск Master платы (ID 1)..."
-node test/board-simulator.js 1 master > test/logs/master-1.log 2>&1 &
+node test/board-simulator.cjs 1 master > test/logs/master-1.log 2>&1 &
 MASTER_PID=$!
 
 # Slave платы (ID 2, 3)
 echo "Запуск Slave платы (ID 2)..."
-node test/board-simulator.js 2 slave > test/logs/slave-2.log 2>&1 &
+node test/board-simulator.cjs 2 slave > test/logs/slave-2.log 2>&1 &
 SLAVE2_PID=$!
 
 echo "Запуск Slave платы (ID 3)..."
-node test/board-simulator.js 3 slave > test/logs/slave-3.log 2>&1 &
+node test/board-simulator.cjs 3 slave > test/logs/slave-3.log 2>&1 &
 SLAVE3_PID=$!
 
 # Сохраняем PID процессов

@@ -8,13 +8,19 @@
 
 ```bash
 # Запуск slave-платы с ID 2 (по умолчанию)
-node test/board-simulator.js
+node test/board-simulator.cjs
 
 # Запуск конкретной платы
-node test/board-simulator.js 3 slave
+node test/board-simulator.cjs 3 slave
 
 # Запуск master-платы
-node test/board-simulator.js 1 master
+node test/board-simulator.cjs 1 master
+
+# Запуск всех симуляторов одновременно
+./test/run-multiple-simulators.sh
+
+# Остановка всех симуляторов
+./test/stop-simulators.sh
 ```
 
 ### Параметры
