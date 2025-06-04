@@ -102,7 +102,6 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
    */
   useEffect(() => {
     if (station && typeof station === 'object' && 'id' in station) {
-      console.log('Синхронизация формы с данными станции:', station);
       const stationData = station as ChargingStation;
       const newFormData = {
         carConnection: Boolean(stationData.carConnection),
@@ -122,7 +121,6 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
         powerOverconsumption: Boolean(stationData.powerOverconsumption),
         fixedPower: Boolean(stationData.fixedPower),
       };
-      console.log('Новые данные формы:', newFormData);
       setFormData(newFormData);
     }
   }, [station]);
@@ -272,10 +270,10 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
         {/* Информация о плате */}
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-foreground mb-2">
-            {station.displayName}
+            {(station as ChargingStation).displayName}
           </h1>
           <p className="text-lg text-muted-foreground">
-            {station.technicalName}
+            {(station as ChargingStation).technicalName}
           </p>
         </div>
 
