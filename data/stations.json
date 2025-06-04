@@ -46,6 +46,8 @@
     "ipAddress": null,
     "description": null,
     "id": 3,
-    "currentPower": 0
+    "currentPower": 0,
+    "carConnection": false,
+    "carChargingPermission": false
   }
 ]

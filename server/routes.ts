@@ -155,6 +155,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  /**
+   * POST /api/board/connect
+   * Подключение платы - определение типа платы и возврат соответствующих данных
+   */
+  app.post("/api/board/connect", async (req, res) => {
+    try {
+      const { boardId } = req.body;
+      
+      if (!boardId) {
+        return res.status(400).json({ message: "Board ID is required" });
+      }
+      
+      // Ищем плату по ID
+      const station = await storage.getChargingStation(boardId);
+      
+      if (!station) {
+        return res.status(404).json({ message: "Board not found" });
+      }
+      
+      // Возвращаем информацию о плате и её данные
+      const response = {
+        id: station.id,
+        type: station.type,
+        displayName: station.displayName,
+        technicalName: station.technicalName,
+        status: station.status,
+        maxPower: station.maxPower,
+        currentPower: station.currentPower,
+        // Для slave-плат возвращаем дополнительные данные
+        ...(station.type === "slave" && {
+          carConnection: station.carConnection,
+          carChargingPermission: station.carChargingPermission,
+          carError: station.carError,
+          masterOnline: station.masterOnline,
+          masterChargingPermission: station.masterChargingPermission,
+          masterAvailablePower: station.masterAvailablePower,
+          voltagePhase1: station.voltagePhase1,
+          voltagePhase2: station.voltagePhase2,
+          voltagePhase3: station.voltagePhase3,
+          currentPhase1: station.currentPhase1,
+          currentPhase2: station.currentPhase2,
+          currentPhase3: station.currentPhase3,
+          chargerPower: station.chargerPower,
+          singlePhaseConnection: station.singlePhaseConnection,
+          powerOverconsumption: station.powerOverconsumption,
+          fixedPower: station.fixedPower
+        })
+      };
+      
+      res.json(response);
+    } catch (error) {
+      console.error("Error connecting board:", error);
+      res.status(500).json({ message: "Failed to connect board" });
+    }
+  });
+
   // Создаем HTTP сервер с зарегистрированными маршрутами
   const httpServer = createServer(app);
   return httpServer;
