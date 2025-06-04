@@ -73,11 +73,17 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/stations'] });
       setHasUnsavedChanges(false);
-      // Показываем уведомление только при ручном сохранении
-      if (!justSaved.current) {
+      // Показываем разные уведомления для мгновенного и ручного сохранения
+      if (justSaved.current) {
+        toast({
+          title: "Сохранено",
+          description: "Настройка применена",
+          duration: 2000,
+        });
+      } else {
         toast({
           title: "Успешно",
-          description: "Данные станции обновлены",
+          description: "Все данные станции обновлены",
         });
       }
     },
@@ -125,10 +131,10 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
   }, [station]);
 
   /**
-   * Обработчик ручного сохранения данных
+   * Обработчик ручного сохранения данных (для числовых полей)
    */
   const handleSave = () => {
-    justSaved.current = true;
+    justSaved.current = false; // Для ручного сохранения показываем полное уведомление
     updateMutation.mutate(formData);
     setHasUnsavedChanges(false);
   };
@@ -171,11 +177,15 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
   };
 
   /**
-   * Обработчик изменения checkbox с автосохранением
+   * Обработчик изменения checkbox с мгновенным сохранением
    */
   const handleCheckboxChange = (field: string, checked: boolean) => {
-    setFormData(prev => ({ ...prev, [field]: checked }));
-    scheduleAutoSave();
+    const updatedData = { ...formData, [field]: checked };
+    setFormData(updatedData);
+    
+    // Мгновенное сохранение переключателей
+    justSaved.current = true;
+    updateMutation.mutate({ [field]: checked });
   };
 
   /**
