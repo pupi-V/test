@@ -4,7 +4,6 @@ idf_component_register(
         "udp_comm.c"
         "master_slave_logic.c"
         "charging_station_handlers.c"
-        "udp_comm.c"
     INCLUDE_DIRS "."
     REQUIRES
         mdns
