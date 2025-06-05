@@ -53,6 +53,18 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
     fixedPower: false,
   });
 
+  // Состояние для строковых значений числовых полей во время редактирования
+  const [inputValues, setInputValues] = useState({
+    voltagePhase1: '',
+    voltagePhase2: '',
+    voltagePhase3: '',
+    currentPhase1: '',
+    currentPhase2: '',
+    currentPhase3: '',
+    chargerPower: '',
+    masterAvailablePower: '',
+  });
+
   /**
    * Загружаем данные станции с автоматическим обновлением каждые 5 секунд
    * Используем правильный API endpoint для получения конкретной станции
@@ -122,6 +134,18 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
         fixedPower: Boolean(stationData.fixedPower),
       };
       setFormData(newFormData);
+
+      // Обновляем строковые значения для полей ввода
+      setInputValues({
+        voltagePhase1: String(Number(stationData.voltagePhase1) || 0),
+        voltagePhase2: String(Number(stationData.voltagePhase2) || 0),
+        voltagePhase3: String(Number(stationData.voltagePhase3) || 0),
+        currentPhase1: String(Number(stationData.currentPhase1) || 0),
+        currentPhase2: String(Number(stationData.currentPhase2) || 0),
+        currentPhase3: String(Number(stationData.currentPhase3) || 0),
+        chargerPower: String(Number(stationData.chargerPower) || 0),
+        masterAvailablePower: String(Number(stationData.masterAvailablePower) || 0),
+      });
     }
   }, [station]);
 
@@ -187,6 +211,10 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
    * Обработчик изменения числовых полей с автосохранением
    */
   const handleNumberChange = (field: string, value: string) => {
+    // Обновляем строковое значение для отображения
+    setInputValues(prev => ({ ...prev, [field]: value }));
+    
+    // Обновляем числовое значение для отправки на сервер
     const numValue = parseFloat(value) || 0;
     setFormData(prev => ({ ...prev, [field]: numValue }));
     scheduleAutoSave();
@@ -402,7 +430,7 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
                           <Input
                             type="number"
                             step="0.1"
-                            value={formData.voltagePhase1}
+                            value={inputValues.voltagePhase1}
                             onChange={(e) => handleNumberChange('voltagePhase1', e.target.value)}
                             className="w-20 text-center"
                           />
@@ -411,7 +439,7 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
                           <Input
                             type="number"
                             step="0.1"
-                            value={formData.voltagePhase2}
+                            value={inputValues.voltagePhase2}
                             onChange={(e) => handleNumberChange('voltagePhase2', e.target.value)}
                             className="w-20 text-center"
                           />
@@ -420,7 +448,7 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
                           <Input
                             type="number"
                             step="0.1"
-                            value={formData.voltagePhase3}
+                            value={inputValues.voltagePhase3}
                             onChange={(e) => handleNumberChange('voltagePhase3', e.target.value)}
                             className="w-20 text-center"
                           />
@@ -432,7 +460,7 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
                           <Input
                             type="number"
                             step="0.1"
-                            value={formData.currentPhase1}
+                            value={inputValues.currentPhase1}
                             onChange={(e) => handleNumberChange('currentPhase1', e.target.value)}
                             className="w-20 text-center"
                           />
@@ -441,7 +469,7 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
                           <Input
                             type="number"
                             step="0.1"
-                            value={formData.currentPhase2}
+                            value={inputValues.currentPhase2}
                             onChange={(e) => handleNumberChange('currentPhase2', e.target.value)}
                             className="w-20 text-center"
                           />
@@ -450,7 +478,7 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
                           <Input
                             type="number"
                             step="0.1"
-                            value={formData.currentPhase3}
+                            value={inputValues.currentPhase3}
                             onChange={(e) => handleNumberChange('currentPhase3', e.target.value)}
                             className="w-20 text-center"
                           />
