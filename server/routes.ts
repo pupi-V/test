@@ -237,8 +237,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           station = await storage.updateChargingStation(existingStation.id, {
             displayName: boardInfo.name,
             technicalName: boardInfo.technicalName,
-            type: boardInfo.type,
-            status: 'online',
+            status: 'available',
             ipAddress: ip,
             maxPower: boardInfo.maxPower,
             description: `ESP32 плата - ${boardInfo.type === 'master' ? 'Главный контроллер' : 'Контроллер станции'}`
@@ -250,7 +249,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             displayName: boardInfo.name,
             technicalName: boardInfo.technicalName,
             type: boardInfo.type,
-            status: 'online',
+            status: 'available',
             ipAddress: ip,
             maxPower: boardInfo.maxPower,
             description: `ESP32 плата - ${boardInfo.type === 'master' ? 'Главный контроллер' : 'Контроллер станции'}`,
@@ -276,15 +275,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
         
-        console.log(`Станция сохранена с ID ${station.id}`);
+        console.log(`Станция сохранена с ID ${station?.id}`);
         
-        res.json({
-          id: station.id,
-          type: station.type,
-          name: station.displayName,
-          ip: station.ipAddress,
-          status: station.status
-        });
+        if (station) {
+          res.json({
+            id: station.id,
+            type: station.type,
+            name: station.displayName,
+            ip: station.ipAddress,
+            status: station.status
+          });
+        } else {
+          throw new Error('Не удалось создать или обновить станцию');
+        }
         
       } catch (storageError) {
         console.error('Ошибка сохранения станции:', storageError);
