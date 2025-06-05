@@ -395,7 +395,7 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
                     id="masterAvailablePower"
                     type="number"
                     step="0.1"
-                    value={formData.masterAvailablePower}
+                    value={inputValues.masterAvailablePower}
                     readOnly={true}
                     className="bg-muted text-muted-foreground cursor-not-allowed"
                   />
@@ -498,7 +498,7 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
                   id="chargerPower"
                   type="number"
                   step="0.1"
-                  value={formData.chargerPower}
+                  value={inputValues.chargerPower}
                   onChange={(e) => handleNumberChange('chargerPower', e.target.value)}
                 />
               </div>

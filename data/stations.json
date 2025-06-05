@@ -1,16 +1,5 @@
 [
   {
-    "displayName": "Master Control Unit",
-    "technicalName": "master-001",
-    "type": "master",
-    "maxPower": 250,
-    "status": "online",
-    "ipAddress": "192.168.1.100",
-    "description": "Главная управляющая плата системы",
-    "id": 1,
-    "currentPower": 15.2
-  },
-  {
     "displayName": "Charging Station Unit",
     "technicalName": "slave-001",
     "type": "slave",
