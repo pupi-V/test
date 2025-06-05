@@ -16,6 +16,7 @@
 #include "esp_netif.h"
 #include "lwip/err.h"
 #include "lwip/sys.h"
+#include "esp_http_server.h"
 
 // Локальные заголовки
 #include "simple_wifi.h"
@@ -55,11 +56,24 @@ void app_main(void)
     
     // Инициализация HTTP сервера с веб интерфейсом
     ESP_LOGI(TAG, "Запуск HTTP сервера...");
-    esp_err_t server_ret = start_charging_station_server();
+    httpd_handle_t server = NULL;
+    httpd_config_t config = HTTPD_DEFAULT_CONFIG();
+    config.uri_match_fn = httpd_uri_match_wildcard;
+    
+    esp_err_t server_ret = httpd_start(&server, &config);
     if (server_ret != ESP_OK) {
         ESP_LOGE(TAG, "Ошибка запуска HTTP сервера: %s", esp_err_to_name(server_ret));
         return;
     }
+    
+    // Регистрация обработчиков
+    httpd_uri_t charging_station_uri = {
+        .uri = "/charging-station",
+        .method = HTTP_GET,
+        .handler = charging_station_get_handler,
+        .user_ctx = NULL
+    };
+    httpd_register_uri_handler(server, &charging_station_uri);
     
     ESP_LOGI(TAG, "HTTP сервер запущен успешно");
     
@@ -75,16 +89,15 @@ void app_main(void)
     
     // Определение роли устройства и запуск соответствующей логики
     ESP_LOGI(TAG, "Определение роли устройства...");
-    device_role_t role = determine_device_role();
+    device_type_t device_type = get_device_type();
     
-    if (role == DEVICE_ROLE_MASTER) {
-        ESP_LOGI(TAG, "Устройство работает в режиме MASTER");
-        start_master_logic();
-    } else if (role == DEVICE_ROLE_SLAVE) {
-        ESP_LOGI(TAG, "Устройство работает в режиме SLAVE");
-        start_slave_logic();
+    // Инициализация master/slave логики
+    esp_err_t ms_ret = master_slave_init(device_type);
+    if (ms_ret == ESP_OK) {
+        ESP_LOGI(TAG, "Master/slave логика инициализирована");
+        master_slave_start();
     } else {
-        ESP_LOGW(TAG, "Роль устройства не определена, работаем в автономном режиме");
+        ESP_LOGW(TAG, "Работаем в автономном режиме");
     }
     
     ESP_LOGI(TAG, "Система управления зарядными станциями запущена");

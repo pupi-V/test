@@ -46,7 +46,7 @@ CONFIG_LOG_DEFAULT_LEVEL=3
 # Enable HTTPS server
 CONFIG_ESP_HTTPS_SERVER_ENABLE=y
 
-# Additional partition settings
+# Bootloader partition settings
 CONFIG_PARTITION_TABLE_SINGLE_APP_LARGE=n
 
 # Component configs
