@@ -1,6 +1,7 @@
 #include "udp_comm.h"
 #include <string.h>
 #include <sys/param.h>
+#include <errno.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_system.h"
@@ -12,7 +13,8 @@
 #include "lwip/err.h"
 #include "lwip/sockets.h"
 #include "lwip/sys.h"
-#include <lwip/netdb.h>
+#include "lwip/netdb.h"
+#include "lwip/inet.h"
 
 static const char *TAG = "UDP_COMM";
 

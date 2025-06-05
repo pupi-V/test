@@ -1,7 +1,9 @@
 #include <esp_http_server.h>
 #include <esp_log.h>
-#include "cJSON.h"
+#include <cJSON.h>
 #include <string.h>
+#include <errno.h>
+#include <sys/param.h>
 
 static const char *TAG = "charging_station";
 
