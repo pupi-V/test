@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>ESP32 Web Control</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <h2>Управление устройством ESP32</h2>
+    <form action='/select1' method='POST'>
+        <label for='dropdown1'>Первый список:</label>
+        <select id='dropdown1' name='dropdown1'>
+            <option value='option1'>Опция 1</option>
+            <option value='option2'>Опция 2</option>
+            <option value='option3'>Опция 3</option>
+        </select><br>
+        <button type='submit'>Выбрать</button>
+    </form><br>
+    <form action='/select2' method='POST'>
+        <label for='dropdown2'>Второй список:</label>
+        <select id='dropdown2' name='dropdown2'>
+            <option value='optionA'>Опция A</option>
+            <option value='optionB'>Опция B</option>
+            <option value='optionC'>Опция C</option>
+        </select><br>
+        <button type='submit'>Выбрать</button>
+    </form><br>
+    <form action='/select3' method='POST'>
+        <label for='dropdown3'>Третий список:</label>
+        <select id='dropdown3' name='dropdown3'>
+            <option value='valX'>Значение X</option>
+            <option value='valY'>Значение Y</option>
+            <option value='valZ'>Значение Z</option>
+        </select><br>
+        <button type='submit'>Выбрать</button>
+    </form>
+    <script src="/script.js"></script>
+</body>
+</html>
+

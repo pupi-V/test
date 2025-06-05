@@ -1,0 +1,25 @@
+{
+  "C_Cpp.intelliSenseEngine": "default",
+  "idf.espIdfPathWin": "c:\\Users\\sater\\esp\\v5.3.1\\esp-idf-v5.3.1-full",
+  "idf.pythonInstallPath": "C:\\Users\\sater\\.espressif\\tools\\idf-python\\3.11.2\\python.exe",
+  "idf.openOcdConfigs": [
+    "interface/ftdi/esp32_devkitj_v1.cfg",
+    "target/esp32.cfg"
+  ],
+  "idf.toolsPathWin": "C:\\Users\\sater\\.espressif",
+  "idf.customExtraVars": {
+    "IDF_TARGET": "esp32"
+  },
+  "idf.portWin": "COM14",
+  "idf.flashType": "UART",
+  "files.associations": {
+    "master_slave_logic.h": "c",
+    "udp_comm.h": "c",
+    "freertos.h": "c",
+    "esp_wifi.h": "c",
+    "esp_http_server.h": "c",
+    "esp_log.h": "c",
+    "esp_system.h": "c",
+    "format": "c"
+  }
+}
