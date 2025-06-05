@@ -109,9 +109,10 @@ esp_err_t api_station_update_handler(httpd_req_t *req)
     // Извлекаем данные
     cJSON *display_name = cJSON_GetObjectItem(json, "displayName");
     cJSON *max_power = cJSON_GetObjectItem(json, "maxPower");
-    cJSON *station_type = cJSON_GetObjectItem(json, "typ");
-    cJSON *status = cJSON_GetObjectItem(json, "status");
-    cJSON *current_power = cJSON_GetObjectItem(json, "currentPower");
+    // Получаем поля из JSON (пока не используются в этой версии)
+    // cJSON *station_type = cJSON_GetObjectItem(json, "typ");
+    // cJSON *status = cJSON_GetObjectItem(json, "status");
+    // cJSON *current_power = cJSON_GetObjectItem(json, "currentPower");
     
     ESP_LOGI(TAG, "Обновление станции: %s, мощность: %.1f кВт", 
              cJSON_GetStringValue(display_name), 
