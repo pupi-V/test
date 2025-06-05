@@ -3,6 +3,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertChargingStationSchema, updateChargingStationSchema } from "@shared/schema";
+import { scanForESP32Boards, connectToESP32Board, sendDataToESP32, getDataFromESP32 } from "./esp32-client";
 
 /**
  * Регистрирует все API маршруты для работы с зарядными станциями
@@ -208,6 +209,199 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error connecting board:", error);
       res.status(500).json({ message: "Failed to connect board" });
+    }
+  });
+
+  /**
+   * POST /api/esp32/scan
+   * Сканирование локальной сети для поиска плат ESP32
+   */
+  app.post("/api/esp32/scan", async (req, res) => {
+    try {
+      console.log('Начинаем сканирование сети для поиска ESP32 плат...');
+      const foundBoards = await scanForESP32Boards();
+      
+      console.log(`Сканирование завершено. Найдено плат: ${foundBoards.length}`);
+      res.json(foundBoards);
+    } catch (error) {
+      console.error('Ошибка сканирования ESP32:', error);
+      res.status(500).json({ 
+        error: "Ошибка при сканировании сети" 
+      });
+    }
+  });
+
+  /**
+   * POST /api/esp32/connect
+   * Подключение к конкретной плате ESP32 по IP адресу
+   */
+  app.post("/api/esp32/connect", async (req, res) => {
+    try {
+      const { ip, type } = req.body;
+      
+      if (!ip) {
+        return res.status(400).json({ 
+          error: "Требуется указать IP адрес платы" 
+        });
+      }
+
+      console.log(`Попытка подключения к ESP32 плате ${ip}${type ? ` (тип: ${type})` : ''}...`);
+
+      // Проверяем доступность платы и получаем её конфигурацию
+      const boardInfo = await connectToESP32Board(ip, type);
+      
+      if (!boardInfo) {
+        return res.status(404).json({ 
+          error: `Плата по адресу ${ip} не отвечает или недоступна` 
+        });
+      }
+
+      console.log(`Плата найдена: ${boardInfo.name} (${boardInfo.type})`);
+
+      // Создаем или обновляем запись станции в базе данных
+      let station;
+      try {
+        // Пытаемся найти существующую станцию с таким IP
+        const stations = await storage.getChargingStations();
+        const existingStation = stations.find(s => s.ipAddress === ip);
+        
+        if (existingStation) {
+          console.log(`Обновляем существующую станцию ID ${existingStation.id}`);
+          // Обновляем существующую станцию
+          station = await storage.updateChargingStation(existingStation.id, {
+            displayName: boardInfo.name,
+            technicalName: boardInfo.technicalName,
+            type: boardInfo.type,
+            status: 'online',
+            ipAddress: ip,
+            maxPower: boardInfo.maxPower,
+            description: `ESP32 плата - ${boardInfo.type === 'master' ? 'Главный контроллер' : 'Контроллер станции'}`
+          });
+        } else {
+          console.log('Создаем новую станцию в базе данных');
+          // Создаем новую станцию
+          station = await storage.createChargingStation({
+            displayName: boardInfo.name,
+            technicalName: boardInfo.technicalName,
+            type: boardInfo.type,
+            status: 'online',
+            ipAddress: ip,
+            maxPower: boardInfo.maxPower,
+            description: `ESP32 плата - ${boardInfo.type === 'master' ? 'Главный контроллер' : 'Контроллер станции'}`,
+            // Устанавливаем дефолтные значения для slave-плат
+            ...(boardInfo.type === 'slave' && {
+              carConnection: false,
+              carChargingPermission: false,
+              carError: false,
+              masterOnline: true,
+              masterChargingPermission: true,
+              masterAvailablePower: 50,
+              voltagePhase1: 220,
+              voltagePhase2: 220,
+              voltagePhase3: 220,
+              currentPhase1: 0,
+              currentPhase2: 0,
+              currentPhase3: 0,
+              chargerPower: 0,
+              singlePhaseConnection: false,
+              powerOverconsumption: false,
+              fixedPower: false
+            })
+          });
+        }
+        
+        console.log(`Станция сохранена с ID ${station.id}`);
+        
+        res.json({
+          id: station.id,
+          type: station.type,
+          name: station.displayName,
+          ip: station.ipAddress,
+          status: station.status
+        });
+        
+      } catch (storageError) {
+        console.error('Ошибка сохранения станции:', storageError);
+        res.status(500).json({ 
+          error: "Ошибка сохранения данных станции" 
+        });
+      }
+
+    } catch (error) {
+      console.error('Ошибка подключения к ESP32:', error);
+      res.status(500).json({ 
+        error: "Ошибка подключения к плате ESP32" 
+      });
+    }
+  });
+
+  /**
+   * POST /api/esp32/:id/sync
+   * Синхронизация данных с платой ESP32
+   */
+  app.post("/api/esp32/:id/sync", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Неверный ID станции" });
+      }
+
+      const station = await storage.getChargingStation(id);
+      if (!station) {
+        return res.status(404).json({ error: "Станция не найдена" });
+      }
+
+      if (!station.ipAddress) {
+        return res.status(400).json({ error: "IP адрес станции не задан" });
+      }
+
+      console.log(`Синхронизация данных со станцией ${id} (${station.ipAddress})`);
+
+      // Получаем актуальные данные с платы ESP32
+      const boardData = await getDataFromESP32(station.ipAddress);
+      
+      if (!boardData) {
+        return res.status(503).json({ 
+          error: `Не удалось получить данные с платы ${station.ipAddress}` 
+        });
+      }
+
+      // Обновляем данные станции на основе полученных с платы
+      const updateData: any = {
+        status: boardData.status || station.status,
+        currentPower: boardData.current_power || station.currentPower
+      };
+
+      // Дополнительные поля для slave-плат
+      if (station.type === 'slave' && boardData.slave_data) {
+        Object.assign(updateData, {
+          carConnection: boardData.slave_data.car_connected,
+          carChargingPermission: boardData.slave_data.car_charging_permission,
+          carError: boardData.slave_data.car_error,
+          voltagePhase1: boardData.slave_data.voltage_phase1,
+          voltagePhase2: boardData.slave_data.voltage_phase2,
+          voltagePhase3: boardData.slave_data.voltage_phase3,
+          currentPhase1: boardData.slave_data.current_phase1,
+          currentPhase2: boardData.slave_data.current_phase2,
+          currentPhase3: boardData.slave_data.current_phase3,
+          chargerPower: boardData.slave_data.charger_power,
+          singlePhaseConnection: boardData.slave_data.single_phase_connection,
+          powerOverconsumption: boardData.slave_data.power_overconsumption,
+          fixedPower: boardData.slave_data.fixed_power
+        });
+      }
+
+      const updatedStation = await storage.updateChargingStation(id, updateData);
+      
+      console.log(`Данные станции ${id} успешно синхронизированы`);
+      res.json(updatedStation);
+
+    } catch (error) {
+      console.error('Ошибка синхронизации с ESP32:', error);
+      res.status(500).json({ 
+        error: "Ошибка синхронизации данных с платой" 
+      });
     }
   });
 
