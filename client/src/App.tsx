@@ -8,6 +8,7 @@ import Dashboard from "@/pages/dashboard";
 import SlaveControl from "@/pages/slave-control";
 import BoardSelector from "@/pages/board-selector";
 import BoardConnect from "@/pages/board-connect";
+import BoardWaiting from "@/pages/board-waiting";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -15,11 +16,12 @@ function Router() {
     <Switch>
       <Route path="/board-connect" component={BoardConnect} />
       <Route path="/board-selector" component={BoardSelector} />
+      <Route path="/board-waiting" component={BoardWaiting} />
       <Route path="/slave/:id">
         {(params) => <SlaveControl stationId={parseInt(params.id)} />}
       </Route>
       <Route path="/dashboard" component={Dashboard} />
-      <Route path="/" component={BoardConnect} />
+      <Route path="/" component={BoardWaiting} />
       <Route component={NotFound} />
     </Switch>
   );
