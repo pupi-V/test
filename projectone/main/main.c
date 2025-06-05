@@ -32,6 +32,7 @@ CONDITIONS OF ANY KIND, either express or implied.
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "master_slave_logic.h"
+#include "charging_station_handlers.h"
 
 
 
