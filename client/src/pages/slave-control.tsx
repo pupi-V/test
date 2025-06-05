@@ -214,10 +214,27 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
     // Обновляем строковое значение для отображения
     setInputValues(prev => ({ ...prev, [field]: value }));
     
-    // Обновляем числовое значение для отправки на сервер
-    const numValue = parseFloat(value) || 0;
-    setFormData(prev => ({ ...prev, [field]: numValue }));
-    scheduleAutoSave();
+    // Планируем автосохранение с конвертацией в число
+    setHasUnsavedChanges(true);
+    
+    // Очищаем предыдущий таймер
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+    
+    // Устанавливаем новый таймер на 2 секунды
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      // Конвертируем в число только при отправке
+      const numValue = parseFloat(value) || 0;
+      const dataToSend = { [field]: numValue };
+      
+      justSaved.current = true;
+      updateMutation.mutate(dataToSend);
+      
+      // Обновляем локальное состояние после успешной отправки
+      setFormData(prev => ({ ...prev, [field]: numValue }));
+      setHasUnsavedChanges(false);
+    }, 2000);
   };
 
   if (isLoading || !station) {
