@@ -74,18 +74,24 @@ export default function BoardWaiting() {
   };
 
   /**
-   * Автоматический поиск плат при загрузке и каждые 5 секунд
+   * Автоматический поиск плат с задержкой при загрузке
    */
   useEffect(() => {
-    searchForBoards();
+    // Показываем экран ожидания минимум 2 секунды
+    const initialDelay = setTimeout(() => {
+      searchForBoards();
+    }, 2000);
     
     const interval = setInterval(() => {
-      if (isSearching) {
+      if (isSearching && searchAttempts > 0) {
         searchForBoards();
       }
     }, 5000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(initialDelay);
+      clearInterval(interval);
+    };
   }, []);
 
   /**
@@ -148,12 +154,19 @@ export default function BoardWaiting() {
               {isSearching ? (
                 <div>
                   <p className="text-muted-foreground mb-4">
-                    Попытка подключения #{searchAttempts}
+                    {searchAttempts === 0 ? "Инициализация..." : `Попытка подключения #${searchAttempts}`}
                   </p>
                   <div className="flex items-center justify-center space-x-2 text-sm text-muted-foreground">
                     <Wifi className="h-4 w-4" />
-                    <span>Сканирование портов...</span>
+                    <span>
+                      {searchAttempts === 0 ? "Подготовка к поиску..." : "Сканирование портов..."}
+                    </span>
                   </div>
+                  {searchAttempts > 0 && (
+                    <div className="mt-4 text-xs text-muted-foreground">
+                      Проверяется ID платы: {searchAttempts <= 10 ? searchAttempts : "все доступные"}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div>
