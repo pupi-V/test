@@ -120,41 +120,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  /**
-   * POST /api/stations/:id/simulate
-   * Симулирует изменение статуса и мощности станции
-   * Используется для демонстрации динамических обновлений
-   */
-  app.post("/api/stations/:id/simulate", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const station = await storage.getChargingStation(id);
-      
-      if (!station) {
-        return res.status(404).json({ message: "Station not found" });
-      }
 
-      // Генерируем случайный статус для демонстрации
-      const statuses = ["charging", "available", "offline", "maintenance"] as const;
-      const newStatus = statuses[Math.floor(Math.random() * statuses.length)];
-      
-      // Если станция заряжает, генерируем случайную мощность
-      // Иначе мощность = 0
-      const newPower = newStatus === "charging" ? 
-        Math.random() * station.maxPower : 0;
-
-      // Обновляем станцию с новыми значениями
-      const updated = await storage.updateChargingStation(id, {
-        status: newStatus,
-        currentPower: Math.round(newPower * 10) / 10 // Округляем до 1 знака после запятой
-      });
-
-      res.json(updated);
-    } catch (error) {
-      console.error("Error simulating station update:", error);
-      res.status(500).json({ message: "Failed to simulate station update" });
-    }
-  });
 
   /**
    * POST /api/board/connect

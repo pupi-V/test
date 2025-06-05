@@ -90,27 +90,7 @@ export default function StationDetailsModal({ station, onClose, onDeleteRequest 
     },
   });
 
-  const simulateUpdateMutation = useMutation({
-    mutationFn: async () => {
-      if (!station) throw new Error("No station selected");
-      const response = await apiRequest("POST", `/api/stations/${station.id}/simulate`, {});
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/stations"] });
-      toast({
-        title: "Статус обновлен",
-        description: "Статус станции был случайно изменен для демонстрации",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Ошибка",
-        description: error.message || "Не удалось обновить статус",
-        variant: "destructive",
-      });
-    },
-  });
+
 
   const onSubmit = (data: UpdateChargingStation) => {
     updateStationMutation.mutate(data);
@@ -169,17 +149,7 @@ export default function StationDetailsModal({ station, onClose, onDeleteRequest 
             </div>
           </div>
 
-          {/* Demo Button */}
-          <div className="flex justify-center">
-            <Button 
-              onClick={() => simulateUpdateMutation.mutate()}
-              disabled={simulateUpdateMutation.isPending}
-              variant="outline"
-              className="bg-yellow-50 border-yellow-200 text-yellow-800 hover:bg-yellow-100"
-            >
-              {simulateUpdateMutation.isPending ? "Обновление..." : "🎲 Симулировать изменение статуса"}
-            </Button>
-          </div>
+
 
           {/* Configuration Form */}
           <Form {...form}>
