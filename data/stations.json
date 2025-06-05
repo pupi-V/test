@@ -1,1 +1,29 @@
-[]
+[
+  {
+    "displayName": "Charging Station Unit",
+    "technicalName": "slave-001",
+    "type": "slave",
+    "maxPower": 22,
+    "status": "available",
+    "ipAddress": "192.168.1.101",
+    "description": "Зарядная станция подчиненного типа",
+    "id": 2,
+    "currentPower": 0,
+    "carConnection": false,
+    "carChargingPermission": false,
+    "carError": false,
+    "masterOnline": true,
+    "masterChargingPermission": true,
+    "masterAvailablePower": 50,
+    "voltagePhase1": 220.5,
+    "voltagePhase2": 219.8,
+    "voltagePhase3": 221.2,
+    "currentPhase1": 0,
+    "currentPhase2": 0,
+    "currentPhase3": 0,
+    "chargerPower": 0,
+    "singlePhaseConnection": false,
+    "powerOverconsumption": false,
+    "fixedPower": false
+  }
+]
