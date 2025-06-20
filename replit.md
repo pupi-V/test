@@ -35,7 +35,7 @@ The system enables real-time monitoring, configuration, and management of multip
 ## Key Components
 
 ### Web Application Components
-1. **Dashboard** (`/dashboard`) - Main overview with station cards and filtering
+1. **Master Control** (`/master`) - Main overview with station cards and filtering (renamed from dashboard)
 2. **Board Selector** (`/board-selector`) - ESP32 device discovery and connection
 3. **Slave Control** (`/slave/:id`) - Detailed control interface for slave stations
 4. **Station Management** - CRUD operations for charging stations
@@ -99,6 +99,8 @@ The system enables real-time monitoring, configuration, and management of multip
 
 ## Changelog
 - June 20, 2025. Initial setup
+- June 20, 2025. Renamed dashboard page to master, updated routing from /dashboard to /master
+- June 20, 2025. Created API_COMMUNICATION_PROTOCOL.md with complete ESP32 communication specifications
 
 ## User Preferences
 
