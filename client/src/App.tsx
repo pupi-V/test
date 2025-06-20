@@ -4,7 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
-import Dashboard from "@/pages/dashboard";
+import Master from "@/pages/master";
 import SlaveControl from "@/pages/slave-control";
 import BoardSelector from "@/pages/board-selector";
 import NotFound from "@/pages/not-found";
@@ -16,7 +16,7 @@ function Router() {
       <Route path="/slave/:id">
         {(params) => <SlaveControl stationId={parseInt(params.id)} />}
       </Route>
-      <Route path="/dashboard" component={Dashboard} />
+      <Route path="/master" component={Master} />
       <Route path="/" component={BoardSelector} />
       <Route component={NotFound} />
     </Switch>

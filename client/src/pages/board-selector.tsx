@@ -321,7 +321,7 @@ export default function BoardSelector() {
                       className="mt-2 w-full"
                       onClick={() => {
                         if (station.type === 'master') {
-                          setLocation('/dashboard');
+                          setLocation('/master');
                         } else {
                           setLocation(`/slave/${station.id}`);
                         }

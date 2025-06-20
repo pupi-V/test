@@ -14,10 +14,10 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { useLocation } from "wouter";
 
 /**
- * Главная страница дашборда с плитками зарядных станций
+ * Страница управления master-платой
  * Отображает все станции в виде карточек с возможностью фильтрации
  */
-export default function Dashboard() {
+export default function Master() {
   // Состояние для фильтров
   const [typeFilter, setTypeFilter] = useState<string>("all");     // Фильтр по типу станции
   const [statusFilter, setStatusFilter] = useState<string>("all"); // Фильтр по статусу
