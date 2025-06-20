@@ -25,5 +25,32 @@
     "singlePhaseConnection": false,
     "powerOverconsumption": false,
     "fixedPower": false
+  },
+  {
+    "displayName": "Тестовая станция Shell",
+    "technicalName": "CS-SHELL-TEST",
+    "type": "slave",
+    "maxPower": 22,
+    "status": "charging",
+    "description": "Станция созданная через curl",
+    "id": 2,
+    "currentPower": 15.5,
+    "ipAddress": null,
+    "carConnection": true,
+    "carChargingPermission": true,
+    "carError": false,
+    "masterOnline": true,
+    "masterChargingPermission": true,
+    "masterAvailablePower": 100,
+    "voltagePhase1": 230.5,
+    "voltagePhase2": 229.8,
+    "voltagePhase3": 231.2,
+    "currentPhase1": 16.2,
+    "currentPhase2": 15.8,
+    "currentPhase3": 16.5,
+    "chargerPower": 15.5,
+    "singlePhaseConnection": false,
+    "powerOverconsumption": false,
+    "fixedPower": false
   }
 ]
