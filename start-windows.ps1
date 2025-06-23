@@ -40,4 +40,4 @@ Write-Host "Press Ctrl+C to stop the server" -ForegroundColor Yellow
 Write-Host ""
 
 # Start the server
-npx tsx server/index.ts
+node run-dev.js

@@ -22,11 +22,6 @@ if not exist "node_modules" (
     )
 )
 
-REM Set environment variables for Windows
-set NODE_ENV=development
-set PORT=5000
-set HOST=0.0.0.0
-
 echo.
 echo Starting server...
 echo Access the application at:
@@ -36,4 +31,5 @@ echo.
 echo Press Ctrl+C to stop the server
 echo.
 
-node start.js
+REM Direct approach without cross-env
+npx tsx server/index.ts

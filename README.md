@@ -8,8 +8,12 @@
 1. Установите Node.js с https://nodejs.org/
 2. Скачайте проект
 3. Запустите один из файлов:
-   - `start-windows.bat` (двойной клик)
+   - `start-windows.bat` (рекомендуется)
+   - `start-simple.bat` (если первый не работает)
    - `start-windows.ps1` (PowerShell)
+
+**Если видите ошибку "NODE_ENV не является командой":**
+- Используйте `start-simple.bat` вместо `npm run dev`
 
 ### Linux/macOS
 ```bash
