@@ -1,47 +1,26 @@
-// Импорты для работы с данными и файловой системой
 import { chargingStations, type ChargingStation, type InsertChargingStation, type UpdateChargingStation } from "@shared/schema";
 import fs from "fs/promises";
 import path from "path";
 import { watchFile } from "fs";
 
-/**
- * Интерфейс для работы с хранилищем зарядных станций
- * Определяет базовые операции CRUD (создание, чтение, обновление, удаление)
- */
 export interface IStorage {
-  // Получить список всех зарядных станций
   getChargingStations(): Promise<ChargingStation[]>;
-  
-  // Получить конкретную станцию по ID
   getChargingStation(id: number): Promise<ChargingStation | undefined>;
-  
-  // Создать новую зарядную станцию
   createChargingStation(station: InsertChargingStation): Promise<ChargingStation>;
-  
-  // Обновить существующую станцию
   updateChargingStation(id: number, updates: UpdateChargingStation): Promise<ChargingStation | undefined>;
-  
-  // Удалить станцию
   deleteChargingStation(id: number): Promise<boolean>;
 }
 
-/**
- * Реализация хранилища данных в JSON файле
- * Сохраняет данные о станциях в локальном JSON файле
- */
 export class JSONStorage implements IStorage {
-  private dataPath: string;              // Путь к файлу с данными
-  private stations: Map<number, ChargingStation>; // Карта станций в памяти для быстрого доступа
-  private currentId: number;             // Счетчик для генерации уникальных ID
+  private dataPath: string;
+  private stations: Map<number, ChargingStation>;
+  private currentId: number;
 
   constructor() {
-    // Устанавливаем путь к файлу данных в папке data/
     this.dataPath = path.resolve(process.cwd(), 'data', 'stations.json');
     this.stations = new Map();
     this.currentId = 1;
-    // Загружаем существующие данные при инициализации
     this.loadData();
-    // Настраиваем отслеживание изменений файла
     this.setupFileWatcher();
   }
 
@@ -71,7 +50,6 @@ export class JSONStorage implements IStorage {
       this.stations.clear();
       stationsArray.forEach(station => {
         this.stations.set(station.id, station);
-        // Обновляем счетчик ID чтобы избежать дублирования
         if (station.id >= this.currentId) {
           this.currentId = station.id + 1;
         }
@@ -79,7 +57,6 @@ export class JSONStorage implements IStorage {
       
       console.log(`Загружено ${stationsArray.length} станций из файла`);
     } catch (error) {
-      // Файл не существует или поврежден - начинаем с пустых данных
       console.log('Файл данных не найден, создаем новый');
       this.stations.clear();
       this.currentId = 1;
@@ -87,13 +64,8 @@ export class JSONStorage implements IStorage {
     }
   }
 
-  /**
-   * Настраивает отслеживание изменений файла данных
-   * Автоматически перезагружает данные при внешних изменениях файла
-   */
   private setupFileWatcher() {
     watchFile(this.dataPath, { interval: 1000 }, (curr, prev) => {
-      // Проверяем, что файл действительно изменился
       if (curr.mtime !== prev.mtime) {
         console.log('Обнаружены изменения в файле данных, перезагружаем...');
         this.loadData();
@@ -101,44 +73,31 @@ export class JSONStorage implements IStorage {
     });
   }
 
-  /**
-   * Сохраняет текущие данные из памяти в JSON файл
-   */
   private async saveData() {
     await this.ensureDataDirectory();
     const stationsArray = Array.from(this.stations.values());
     await fs.writeFile(this.dataPath, JSON.stringify(stationsArray, null, 2));
   }
 
-  /**
-   * Возвращает список всех станций, отсортированный по ID
-   */
   async getChargingStations(): Promise<ChargingStation[]> {
     return Array.from(this.stations.values()).sort((a, b) => a.id - b.id);
   }
 
-  /**
-   * Находит и возвращает станцию по её ID
-   */
   async getChargingStation(id: number): Promise<ChargingStation | undefined> {
     return this.stations.get(id);
   }
 
-  /**
-   * Создает новую зарядную станцию с автогенерируемым ID
-   */
   async createChargingStation(insertStation: InsertChargingStation): Promise<ChargingStation> {
-    const id = this.currentId++; // Генерируем новый уникальный ID
+    const id = this.currentId++;
     
-    // Создаем полный объект станции с начальными значениями
     const station: ChargingStation = {
       ...insertStation,
       id,
-      currentPower: 0,        // Начальная мощность = 0
-      status: "available",    // Начальный статус = доступна
-      type: insertStation.type || "undefined",        // Устанавливаем тип или "undefined"
-      ipAddress: insertStation.ipAddress || null,     // Обрабатываем undefined
-      description: insertStation.description || null, // Обрабатываем undefined
+      currentPower: 0,
+      status: "available",
+      type: insertStation.type || "undefined",
+      ipAddress: insertStation.ipAddress || null,
+      description: insertStation.description || null,
       
       // Данные для slave-платы с начальными значениями
       carConnection: false,

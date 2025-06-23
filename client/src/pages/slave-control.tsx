@@ -15,18 +15,12 @@ interface SlaveControlProps {
   stationId: number;
 }
 
-/**
- * Страница управления slave-платой
- * Отображает интерфейс управления для slave станции с тремя основными секциями
- */
 export default function SlaveControl({ stationId }: SlaveControlProps) {
   const { toast } = useToast();
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasInitialized = useRef(false);
   const justSaved = useRef(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  
-  // Состояние для всех полей slave-платы
   const [formData, setFormData] = useState({
     // Car секция
     carConnection: false,
@@ -53,7 +47,6 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
     fixedPower: false,
   });
 
-  // Состояние для строковых значений числовых полей во время редактирования
   const [inputValues, setInputValues] = useState({
     voltagePhase1: '',
     voltagePhase2: '',
@@ -65,19 +58,12 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
     masterAvailablePower: '',
   });
 
-  /**
-   * Загружаем данные станции с автоматическим обновлением каждые 5 секунд
-   * Используем правильный API endpoint для получения конкретной станции
-   */
   const { data: station, isLoading, isFetching, refetch } = useQuery<ChargingStation>({
     queryKey: [`/api/stations/${stationId}`],
     enabled: !!stationId,
-    refetchInterval: 5000, // Автообновление каждые 5 секунд
+    refetchInterval: 5000,
   });
 
-  /**
-   * Мутация для обновления данных станции
-   */
   const updateMutation = useMutation({
     mutationFn: async (data: Partial<ChargingStation>) => {
       return await apiRequest('PATCH', `/api/stations/${stationId}`, data);
@@ -85,7 +71,6 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/stations'] });
       setHasUnsavedChanges(false);
-      // Показываем разные уведомления для мгновенного и ручного сохранения
       if (justSaved.current) {
         toast({
           title: "Сохранено",
@@ -108,10 +93,6 @@ export default function SlaveControl({ stationId }: SlaveControlProps) {
     },
   });
 
-  /**
-   * Обновляем форму при загрузке данных станции
-   * Всегда синхронизируем с актуальными данными с сервера
-   */
   useEffect(() => {
     if (station && typeof station === 'object' && 'id' in station) {
       const stationData = station as ChargingStation;

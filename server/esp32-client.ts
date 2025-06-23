@@ -14,18 +14,11 @@ interface ESP32BoardInfo {
   lastSeen: string;
 }
 
-/**
- * Сканирование локальной сети для поиска плат ESP32
- * Использует ping и HTTP-запросы для определения доступных устройств
- */
 export async function scanForESP32Boards(): Promise<ESP32BoardInfo[]> {
   const foundBoards: ESP32BoardInfo[] = [];
   
   try {
-    // Получаем информацию о локальной сети
     const networkInfo = await getLocalNetworkInfo();
-    
-    // Сканируем диапазон IP адресов в локальной сети
     const scanPromises = [];
     
     for (let i = 1; i <= 254; i++) {
@@ -33,7 +26,6 @@ export async function scanForESP32Boards(): Promise<ESP32BoardInfo[]> {
       scanPromises.push(scanSingleIP(ip));
     }
     
-    // Ждем завершения всех сканирований
     const results = await Promise.allSettled(scanPromises);
     
     for (const result of results) {

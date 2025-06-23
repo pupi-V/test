@@ -19,10 +19,6 @@ interface ESP32Board {
   lastSeen: string;
 }
 
-/**
- * Страница подключения к реальным платам ESP32
- * Сканирует сеть для поиска доступных плат и подключается к ним
- */
 export default function BoardSelector() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -30,17 +26,11 @@ export default function BoardSelector() {
   const [manualIp, setManualIp] = useState("");
   const [foundBoards, setFoundBoards] = useState<ESP32Board[]>([]);
 
-  /**
-   * Загрузка списка подключенных станций для определения активных плат
-   */
   const { data: stations, refetch: refetchStations } = useQuery<any[]>({
     queryKey: ['/api/stations'],
-    refetchInterval: 5000 // Обновляем каждые 5 секунд
+    refetchInterval: 5000
   });
 
-  /**
-   * Мутация для сканирования сети в поисках ESP32 плат
-   */
   const scanMutation = useMutation({
     mutationFn: async () => {
       const response = await apiRequest('POST', '/api/esp32/scan', {});
@@ -65,9 +55,6 @@ export default function BoardSelector() {
     },
   });
 
-  /**
-   * Мутация для подключения к конкретной плате ESP32
-   */
   const connectMutation = useMutation({
     mutationFn: async (params: { ip: string; type?: 'master' | 'slave' }) => {
       const response = await apiRequest('POST', '/api/esp32/connect', params);
@@ -101,27 +88,17 @@ export default function BoardSelector() {
     },
   });
 
-  /**
-   * Запуск сканирования сети
-   */
   const handleScan = () => {
     setIsScanning(true);
     scanMutation.mutate();
     
-    // Останавливаем индикатор сканирования через 10 секунд
     setTimeout(() => setIsScanning(false), 10000);
   };
 
-  /**
-   * Подключение к плате по IP адресу
-   */
   const handleConnectToBoard = (board: ESP32Board) => {
     connectMutation.mutate({ ip: board.ip, type: board.type });
   };
 
-  /**
-   * Ручное подключение по IP адресу
-   */
   const handleManualConnect = () => {
     if (!manualIp.trim()) {
       toast({
@@ -146,11 +123,7 @@ export default function BoardSelector() {
     connectMutation.mutate({ ip: manualIp });
   };
 
-  /**
-   * Автоматическое сканирование при загрузке страницы
-   */
   useEffect(() => {
-    // Запускаем первое сканирование через 2 секунды после загрузки
     const timer = setTimeout(() => {
       handleScan();
     }, 2000);

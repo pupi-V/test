@@ -1,21 +1,11 @@
-// Импорты для работы с Express сервером и HTTP
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertChargingStationSchema, updateChargingStationSchema } from "@shared/schema";
 import { scanForESP32Boards, connectToESP32Board, sendDataToESP32, getDataFromESP32 } from "./esp32-client";
 
-/**
- * Регистрирует все API маршруты для работы с зарядными станциями
- * @param app - экземпляр Express приложения
- * @returns HTTP сервер
- */
 export async function registerRoutes(app: Express): Promise<Server> {
   
-  /**
-   * GET /api/stations
-   * Получает список всех зарядных станций
-   */
   app.get("/api/stations", async (req, res) => {
     try {
       const stations = await storage.getChargingStations();
@@ -26,10 +16,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  /**
-   * GET /api/stations/:id
-   * Получает конкретную зарядную станцию по ID
-   */
   app.get("/api/stations/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
@@ -46,19 +32,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  /**
-   * POST /api/stations
-   * Создает новую зарядную станцию
-   * Валидирует входные данные перед сохранением
-   */
   app.post("/api/stations", async (req, res) => {
     try {
-      // Валидируем данные с помощью Zod схемы
       const validatedData = insertChargingStationSchema.parse(req.body);
       const station = await storage.createChargingStation(validatedData);
       res.status(201).json(station);
     } catch (error: any) {
-      // Проверяем тип ошибки валидации
       if (error.name === "ZodError") {
         return res.status(400).json({ 
           message: "Invalid station data", 
@@ -70,15 +49,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  /**
-   * PATCH /api/stations/:id
-   * Обновляет существующую зарядную станцию
-   * Поддерживает частичное обновление полей
-   */
   app.patch("/api/stations/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      // Валидируем данные для обновления
       const validatedData = updateChargingStationSchema.parse(req.body);
       const station = await storage.updateChargingStation(id, validatedData);
       

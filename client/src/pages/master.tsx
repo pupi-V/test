@@ -1,4 +1,3 @@
-// Импорты для React хуков и компонентов
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChargingStation } from "@shared/schema";
@@ -13,62 +12,35 @@ import DeleteConfirmationModal from "@/components/delete-confirmation-modal";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useLocation } from "wouter";
 
-/**
- * Страница управления master-платой
- * Отображает все станции в виде карточек с возможностью фильтрации
- */
 export default function Master() {
-  // Состояние для фильтров
-  const [typeFilter, setTypeFilter] = useState<string>("all");     // Фильтр по типу станции
-  const [statusFilter, setStatusFilter] = useState<string>("all"); // Фильтр по статусу
-  
-  // Состояние для модальных окон
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);                          // Модалка добавления станции
-  const [selectedStation, setSelectedStation] = useState<ChargingStation | null>(null); // Выбранная станция для детального просмотра
-  const [stationToDelete, setStationToDelete] = useState<ChargingStation | null>(null); // Станция для удаления
-
-  // Клиент для работы с кэшем запросов
+  const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [selectedStation, setSelectedStation] = useState<ChargingStation | null>(null);
+  const [stationToDelete, setStationToDelete] = useState<ChargingStation | null>(null);
   const queryClient = useQueryClient();
 
-  /**
-   * Загружаем список всех зарядных станций
-   * Автоматически обновляется каждые 5 секунд для отображения актуальных данных
-   */
   const { data: stations = [], isLoading, isFetching, refetch } = useQuery<ChargingStation[]>({
     queryKey: ["/api/stations"],
-    refetchInterval: 5000, // Автообновление каждые 5 секунд
+    refetchInterval: 5000,
   });
 
-  /**
-   * Фильтруем станции по выбранным критериям
-   */
   const filteredStations = stations.filter(station => {
     const typeMatch = typeFilter === "all" || station.type === typeFilter;
     const statusMatch = statusFilter === "all" || station.status === statusFilter;
     return typeMatch && statusMatch;
   });
 
-  // Подсчет активных станций (со статусом "charging")
   const activeStations = stations.filter(s => s.status === "charging");
 
-  /**
-   * Обработчик клика по плитке станции - открывает детальный просмотр
-   */
   const handleStationClick = (station: ChargingStation) => {
     setSelectedStation(station);
   };
 
-  /**
-   * Обработчик запроса на удаление станции
-   */
   const handleDeleteRequest = (station: ChargingStation) => {
     setStationToDelete(station);
   };
 
-  /**
-   * Принудительное обновление данных
-   * Очищает кэш и загружает свежие данные с сервера
-   */
   const handleRefresh = async () => {
     await refetch();
   };
@@ -92,7 +64,6 @@ export default function Master() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="bg-card shadow-sm border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">

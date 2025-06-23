@@ -1,4 +1,3 @@
-// Компонент для переключения темы
 import { Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,10 +8,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "@/components/theme-provider";
 
-/**
- * Кнопка переключения темы
- * Позволяет выбрать между светлой, темной темой или системной настройкой
- */
 export function ThemeToggle() {
   const { setTheme } = useTheme();
 

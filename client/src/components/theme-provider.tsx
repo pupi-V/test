@@ -1,4 +1,3 @@
-// Компонент для управления темой приложения
 import { createContext, useContext, useEffect, useState } from "react";
 
 type Theme = "light" | "dark" | "system";
@@ -21,10 +20,6 @@ const initialState: ThemeProviderState = {
 
 const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 
-/**
- * Провайдер темы для всего приложения
- * Управляет переключением между светлой и темной темами
- */
 export function ThemeProvider({
   children,
   defaultTheme = "system",
@@ -68,9 +63,6 @@ export function ThemeProvider({
   );
 }
 
-/**
- * Хук для использования темы в компонентах
- */
 export const useTheme = () => {
   const context = useContext(ThemeProviderContext);
 
