@@ -1,0 +1,20 @@
+Required Arduino Libraries:
+
+1. ESP32 Board Package (already included with ESP32 core)
+2. ArduinoJson by Benoit Blanchon (v7.0.4 or later)
+
+Installation via Arduino IDE:
+- Go to Tools > Manage Libraries
+- Search for "ArduinoJson" 
+- Install the latest version by Benoit Blanchon
+
+Board Selection:
+- Board: "ESP32 Dev Module"
+- Upload Speed: 921600
+- CPU Frequency: 240MHz (WiFi/BT)
+- Flash Frequency: 80MHz
+- Flash Mode: DIO
+- Flash Size: 4MB (32Mb)
+- Partition Scheme: "Default 4MB with spiffs"
+- Core Debug Level: None
+- PSRAM: Disabled
