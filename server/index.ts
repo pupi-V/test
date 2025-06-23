@@ -54,12 +54,13 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  const port = 5000;
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
+  const port = parseInt(process.env.PORT || "5000");
+  const host = process.env.HOST || "0.0.0.0";
+  
+  server.listen(port, () => {
+    log(`serving on http://${host}:${port}`);
+    if (host === "0.0.0.0") {
+      log(`access via http://localhost:${port} or http://your-ip:${port}`);
+    }
   });
 })();
