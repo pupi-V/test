@@ -15,12 +15,11 @@ This is a full-stack web application for managing and monitoring electric vehicl
 - **Build Tool**: Vite for development and production builds
 
 ### Backend Architecture
-- **Runtime**: Node.js with Express.js
-- **Language**: TypeScript with tsx for development execution
-- **Database**: PostgreSQL with Drizzle ORM
-- **Database Provider**: Neon Database (serverless PostgreSQL)
+- **Runtime**: C with custom HTTP server
+- **Language**: C99 standard with GCC compiler
+- **Storage**: JSON file-based data persistence
 - **API Design**: RESTful API with JSON responses
-- **File Storage**: JSON-based local storage fallback for development
+- **Dependencies**: Only standard C libraries (no external dependencies)
 
 ### Key Components
 
@@ -101,22 +100,19 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### C-сервер реализация (ЗАВЕРШЕНО)
-- June 24, 2025: Создан полнофункциональный C-сервер как альтернатива Node.js backend
-- Реализованы все основные API endpoints (/api/stations, /api/esp32/scan)
-- Добавлена простая HTTP и JSON библиотеки для независимости от внешних зависимостей
-- Создан скрипт переключения между Node.js и C серверами (switch_server.sh)
-- Полная совместимость с существующим React фронтендом
-- Протестирована работоспособность и совместимость API
-- Создана документация и инструменты для развертывания
-
-### Архитектурные изменения
-- Добавлена поддержка двух backend реализаций:
-  - Node.js/Express (оригинальная): полнофункциональная с PostgreSQL и ESP32 интеграцией
-  - C/libmicrohttpd (новая): высокопроизводительная с упрощенными зависимостями
-- Unified API обеспечивает одинаковый интерфейс для обеих реализаций
-- JSON-based storage как fallback для обеих систем
+### Полный переход на C-сервер (ЗАВЕРШЕНО)
+- June 24, 2025: Node.js backend полностью удален, остался только C-сервер
+- Создан высокопроизводительный C-сервер с нуля
+- Реализованы все API endpoints (/api/stations, /api/esp32/scan)
+- Собственные HTTP и JSON библиотеки без внешних зависимостей
+- Полная совместимость с React фронтендом сохранена
+- Система сборки и запуска упрощена
+- Минимальное потребление ресурсов
 
 ## Changelog
 
-- June 24, 2025: Initial setup and C-server implementation
+- June 24, 2025: Complete migration from Node.js to C backend
+  - Deleted Node.js server directory and dependencies
+  - C-server now serves as the only backend
+  - Updated build scripts and documentation
+  - System fully operational with C backend only

@@ -10,7 +10,7 @@
     "currentPower": 0,
     "description": null,
     "carConnection": false,
-    "carChargingPermission": false,
+    "carChargingPermission": true,
     "carError": false,
     "masterOnline": false,
     "masterChargingPermission": false,
