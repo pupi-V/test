@@ -1,0 +1,51 @@
+# Объектные файлы
+*.o
+*.obj
+
+# Исполняемые файлы
+charging_station_server
+charging_station_server.exe
+
+# Отладочная информация
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Архивы и библиотеки
+*.a
+*.lib
+
+# Временные файлы
+*~
+*.bak
+*.swp
+*.tmp
+core
+
+# Папки сборки
+build/
+dist/
+debug/
+release/
+
+# Файлы IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# Файлы профилирования
+gmon.out
+perf.data*
+
+# Файлы покрытия кода
+*.gcno
+*.gcda
+*.gcov
+
+# Файлы valgrind
+*.valgrind
+
+# Документация
+docs/html/
+docs/latex/
