@@ -24,6 +24,17 @@ static int server_running = 1;
 static int port = 5000;
 static const char *host = "0.0.0.0";
 
+// Получение порта из переменной окружения
+void init_port_config() {
+    const char *port_env = getenv("PORT");
+    if (port_env) {
+        int env_port = atoi(port_env);
+        if (env_port > 0 && env_port < 65536) {
+            port = env_port;
+        }
+    }
+}
+
 /**
  * Обработчик сигналов для корректного завершения работы сервера
  */
@@ -186,7 +197,62 @@ void handle_request(const http_request_t *request, http_response_t *response) {
         return;
     }
     
-    // Статические файлы
+    // Статические файлы - serve index.html for SPA routing
+    if (strcmp(request->path, "/") == 0 || strstr(request->path, ".") == NULL) {
+        // Serve index.html for root path or paths without extensions (SPA routing)
+        FILE *file = fopen("../dist/public/index.html", "r");
+        if (file) {
+            fseek(file, 0, SEEK_END);
+            long file_size = ftell(file);
+            fseek(file, 0, SEEK_SET);
+            
+            char *file_content = malloc(file_size + 1);
+            fread(file_content, 1, file_size, file);
+            file_content[file_size] = '\0';
+            fclose(file);
+            
+            http_set_response_status(response, 200, "OK");
+            http_add_response_header(response, "Content-Type", "text/html");
+            http_set_response_body(response, file_content);
+            
+            free(file_content);
+            log_request(request->method, request->path, 200, "index.html served");
+            return;
+        }
+    }
+    
+    // Static asset files
+    char file_path[1024];
+    snprintf(file_path, sizeof(file_path), "../dist/public%s", request->path);
+    
+    FILE *file = fopen(file_path, "r");
+    if (file) {
+        fseek(file, 0, SEEK_END);
+        long file_size = ftell(file);
+        fseek(file, 0, SEEK_SET);
+        
+        char *file_content = malloc(file_size + 1);
+        fread(file_content, 1, file_size, file);
+        file_content[file_size] = '\0';
+        fclose(file);
+        
+        // Set appropriate content type
+        const char *content_type = "text/plain";
+        if (strstr(request->path, ".html")) content_type = "text/html";
+        else if (strstr(request->path, ".css")) content_type = "text/css";
+        else if (strstr(request->path, ".js")) content_type = "application/javascript";
+        else if (strstr(request->path, ".json")) content_type = "application/json";
+        
+        http_set_response_status(response, 200, "OK");
+        http_add_response_header(response, "Content-Type", content_type);
+        http_set_response_body(response, file_content);
+        
+        free(file_content);
+        log_request(request->method, request->path, 200, "static file served");
+        return;
+    }
+    
+    // File not found
     http_set_response_status(response, 404, "Not Found");
     http_set_response_body(response, "{\"message\":\"Not Found\"}");
     log_request(request->method, request->path, 404, "{\"message\":\"Not Found\"}");
