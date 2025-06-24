@@ -207,15 +207,6 @@ int initialize_server() {
 }
 
 /**
- * Получение текущего времени в миллисекундах
- */
-long get_current_time_ms(void) {
-    struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
-    return (ts.tv_sec * 1000) + (ts.tv_nsec / 1000000);
-}
-
-/**
  * Основная функция программы
  */
 int main(int argc, char *argv[]) {

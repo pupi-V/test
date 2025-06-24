@@ -10,7 +10,7 @@ LIBS = -lpthread
 TARGET = charging_station_server
 
 # Исходные файлы
-SOURCES = main.c storage.c simple_http.c simple_json.c
+SOURCES = main.c storage_simple.c simple_http.c simple_json.c
 
 # Объектные файлы
 OBJECTS = $(SOURCES:.c=.o)
