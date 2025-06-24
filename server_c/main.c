@@ -168,6 +168,84 @@ void handle_request(const http_request_t *request, http_response_t *response) {
             return;
         }
         
+        // GET /api/stations/:id
+        if (strncmp(request->path, "/api/stations/", 14) == 0 && strcmp(request->method, "GET") == 0) {
+            const char *id_str = request->path + 14; // Skip "/api/stations/"
+            int station_id = atoi(id_str);
+            
+            if (station_id <= 0) {
+                http_set_response_status(response, 400, "Bad Request");
+                http_add_response_header(response, "Content-Type", "application/json; charset=utf-8");
+                http_set_response_body(response, "{\"message\":\"Invalid station ID\"}");
+                log_request("GET", request->path, 400, "{\"message\":\"Invalid station ID\"}");
+                return;
+            }
+            
+            charging_station_t station;
+            if (storage_get_station(station_id, &station) != 0) {
+                http_set_response_status(response, 404, "Not Found");
+                http_add_response_header(response, "Content-Type", "application/json; charset=utf-8");
+                http_set_response_body(response, "{\"message\":\"Station not found\"}");
+                log_request("GET", request->path, 404, "{\"message\":\"Station not found\"}");
+                return;
+            }
+            
+            // Создаем JSON объект для станции
+            json_value_t *station_obj = json_create_object();
+            
+            json_object_set(station_obj, "id", json_create_number(station.id));
+            json_object_set(station_obj, "displayName", json_create_string(station.display_name));
+            json_object_set(station_obj, "technicalName", json_create_string(station.technical_name));
+            json_object_set(station_obj, "type", json_create_string(station.type));
+            json_object_set(station_obj, "status", json_create_string(station.status));
+            json_object_set(station_obj, "maxPower", json_create_number(station.max_power));
+            json_object_set(station_obj, "currentPower", json_create_number(station.current_power));
+            
+            if (strlen(station.ip_address) > 0) {
+                json_object_set(station_obj, "ipAddress", json_create_string(station.ip_address));
+            }
+            
+            if (strlen(station.description) > 0) {
+                json_object_set(station_obj, "description", json_create_string(station.description));
+            }
+            
+            // Slave-specific данные
+            json_object_set(station_obj, "carConnection", json_create_bool(station.car_connection));
+            json_object_set(station_obj, "carChargingPermission", json_create_bool(station.car_charging_permission));
+            json_object_set(station_obj, "carError", json_create_bool(station.car_error));
+            json_object_set(station_obj, "masterOnline", json_create_bool(station.master_online));
+            json_object_set(station_obj, "masterChargingPermission", json_create_bool(station.master_charging_permission));
+            json_object_set(station_obj, "masterAvailablePower", json_create_number(station.master_available_power));
+            
+            // Электрические параметры
+            json_object_set(station_obj, "voltagePhase1", json_create_number(station.voltage_phase1));
+            json_object_set(station_obj, "voltagePhase2", json_create_number(station.voltage_phase2));
+            json_object_set(station_obj, "voltagePhase3", json_create_number(station.voltage_phase3));
+            json_object_set(station_obj, "currentPhase1", json_create_number(station.current_phase1));
+            json_object_set(station_obj, "currentPhase2", json_create_number(station.current_phase2));
+            json_object_set(station_obj, "currentPhase3", json_create_number(station.current_phase3));
+            json_object_set(station_obj, "chargerPower", json_create_number(station.charger_power));
+            
+            // Дополнительные параметры
+            json_object_set(station_obj, "singlePhaseConnection", json_create_bool(station.single_phase_connection));
+            json_object_set(station_obj, "powerOverconsumption", json_create_bool(station.power_overconsumption));
+            json_object_set(station_obj, "fixedPower", json_create_bool(station.fixed_power));
+            
+            char *json_string = json_stringify(station_obj);
+            
+            http_set_response_status(response, 200, "OK");
+            http_add_response_header(response, "Content-Type", "application/json; charset=utf-8");
+            http_set_response_body(response, json_string);
+            
+            long end_time = get_current_time_ms();
+            printf("%s [express] GET %s 200 in %ldms :: station data\n", 
+                   "time", request->path, end_time - start_time);
+            
+            free(json_string);
+            json_free(station_obj);
+            return;
+        }
+        
         // POST /api/esp32/scan
         if (strcmp(request->path, "/api/esp32/scan") == 0 && strcmp(request->method, "POST") == 0) {
             printf("Начинаем сканирование сети для поиска ESP32 плат...\n");
