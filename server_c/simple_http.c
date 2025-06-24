@@ -109,13 +109,12 @@ void http_set_response_status(http_response_t *response, int status_code, const 
     
     response->status_code = status_code;
     
-    // Добавляем стандартные заголовки CORS
+    // Добавляем стандартные заголовки CORS без Content-Type (будет добавлен отдельно)
     snprintf(response->headers, sizeof(response->headers),
         "HTTP/1.1 %d %s\r\n"
         "Access-Control-Allow-Origin: *\r\n"
         "Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS\r\n"
-        "Access-Control-Allow-Headers: Content-Type, Authorization\r\n"
-        "Content-Type: application/json; charset=utf-8\r\n",
+        "Access-Control-Allow-Headers: Content-Type, Authorization\r\n",
         status_code, status_text ? status_text : "OK");
 }
 
@@ -149,6 +148,25 @@ void http_set_response_body(http_response_t *response, const char *body) {
 char* http_format_response(const http_response_t *response) {
     if (!response) return NULL;
     
+    // Handle large files stored in body_data
+    if (response->body_data && response->body_size > 0) {
+        int header_size = strlen(response->headers) + 100;
+        char *full_response = malloc(header_size + response->body_size);
+        if (!full_response) return NULL;
+        
+        // Write headers first
+        int header_len = snprintf(full_response, header_size,
+            "%sContent-Length: %zu\r\n\r\n",
+            response->headers,
+            response->body_size);
+        
+        // Append binary data
+        memcpy(full_response + header_len, response->body_data, response->body_size);
+        
+        return full_response;
+    }
+    
+    // Handle regular small responses
     int total_size = strlen(response->headers) + response->body_length + 100;
     char *full_response = malloc(total_size);
     if (!full_response) return NULL;
@@ -210,8 +228,23 @@ void* handle_connection(void *arg) {
             // Отправляем ответ
             char *full_response = http_format_response(&response);
             if (full_response) {
-                send(conn_data->client_fd, full_response, strlen(full_response), 0);
+                // Calculate correct response size for binary data
+                size_t response_size;
+                if (response.body_data && response.body_size > 0) {
+                    // For large files: header size + body size
+                    response_size = strlen(response.headers) + 100 + response.body_size;
+                } else {
+                    // For regular responses: use string length
+                    response_size = strlen(full_response);
+                }
+                
+                send(conn_data->client_fd, full_response, response_size, 0);
                 free(full_response);
+                
+                // Clean up large file data
+                if (response.body_data) {
+                    free(response.body_data);
+                }
             }
         }
     }

@@ -225,27 +225,50 @@ void handle_request(const http_request_t *request, http_response_t *response) {
     char file_path[1024];
     snprintf(file_path, sizeof(file_path), "../dist/public%s", request->path);
     
-    FILE *file = fopen(file_path, "r");
+    FILE *file = fopen(file_path, "rb");  // Use binary mode for all files
     if (file) {
         fseek(file, 0, SEEK_END);
         long file_size = ftell(file);
         fseek(file, 0, SEEK_SET);
         
         char *file_content = malloc(file_size + 1);
-        fread(file_content, 1, file_size, file);
-        file_content[file_size] = '\0';
+        size_t bytes_read = fread(file_content, 1, file_size, file);
         fclose(file);
         
-        // Set appropriate content type
+        // Don't null-terminate binary files, but ensure we have the right size
+        if (bytes_read != (size_t)file_size) {
+            free(file_content);
+            http_set_response_status(response, 500, "Internal Server Error");
+            http_set_response_body(response, "{\"message\":\"File read error\"}");
+            log_request(request->method, request->path, 500, "File read error");
+            return;
+        }
+        
+        // Set appropriate content type with proper MIME types for modules
         const char *content_type = "text/plain";
-        if (strstr(request->path, ".html")) content_type = "text/html";
-        else if (strstr(request->path, ".css")) content_type = "text/css";
-        else if (strstr(request->path, ".js")) content_type = "application/javascript";
-        else if (strstr(request->path, ".json")) content_type = "application/json";
+        if (strstr(request->path, ".html")) content_type = "text/html; charset=utf-8";
+        else if (strstr(request->path, ".css")) content_type = "text/css; charset=utf-8";
+        else if (strstr(request->path, ".js")) content_type = "text/javascript; charset=utf-8";
+        else if (strstr(request->path, ".mjs")) content_type = "text/javascript; charset=utf-8";
+        else if (strstr(request->path, ".json")) content_type = "application/json; charset=utf-8";
+        else if (strstr(request->path, ".png")) content_type = "image/png";
+        else if (strstr(request->path, ".jpg") || strstr(request->path, ".jpeg")) content_type = "image/jpeg";
+        else if (strstr(request->path, ".svg")) content_type = "image/svg+xml";
+        else if (strstr(request->path, ".ico")) content_type = "image/x-icon";
         
         http_set_response_status(response, 200, "OK");
         http_add_response_header(response, "Content-Type", content_type);
-        http_set_response_body(response, file_content);
+        
+        // For large files, use body_data; for small files, use regular body
+        if (file_size < MAX_RESPONSE_SIZE - 1) {
+            memcpy(response->body, file_content, file_size);
+            response->body[file_size] = '\0';
+            response->body_length = file_size;
+        } else {
+            response->body_data = malloc(file_size);
+            memcpy(response->body_data, file_content, file_size);
+            response->body_size = file_size;
+        }
         
         free(file_content);
         log_request(request->method, request->path, 200, "static file served");

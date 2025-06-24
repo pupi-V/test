@@ -33,6 +33,8 @@ typedef struct {
     char headers[1024];
     char body[MAX_RESPONSE_SIZE];
     int body_length;
+    char *body_data;  // For large binary files
+    size_t body_size; // Size of body_data
 } http_response_t;
 
 /**
