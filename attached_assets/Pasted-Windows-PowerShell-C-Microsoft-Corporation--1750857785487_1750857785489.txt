@@ -1,0 +1,684 @@
+Windows PowerShell
+(C) Корпорация Майкрософт (Microsoft Corporation). Все права защищены.
+
+Установите последнюю версию PowerShell для новых функций и улучшения! https://aka.ms/PSWindows
+
+PS C:\Windows\system32> cd C:\Users\Juniors\Desktop\test-main
+PS C:\Users\Juniors\Desktop\test-main> cd esp32_project
+PS C:\Users\Juniors\Desktop\test-main\esp32_project> python scripts/build_and_upload.py
+🔌 ESP32 Charging Station Management System
+📋 Автоматическая сборка и загрузка
+
+✅ PlatformIO установлен: PlatformIO Core, version 6.1.18
+
+==================================================
+🔄 Очистка проекта
+==================================================
+✅ Очистка проекта - УСПЕШНО
+Вывод:
+Processing esp32dev (platform: espressif32; board: esp32dev; framework: arduino)
+--------------------------------------------------------------------------------
+Verbose mode can be enabled via `-v, --verbose` option
+Removing .pio\build\esp32dev
+Done cleaning
+========================= [SUCCESS] Took 0.94 seconds =========================
+
+🧹 Проект очищен
+
+==================================================
+🔄 Сборка прошивки
+==================================================
+❌ Сборка прошивки - ОШИБКА
+Код ошибки: 1
+Стандартный вывод:
+Processing esp32dev (platform: espressif32; board: esp32dev; framework: arduino)
+--------------------------------------------------------------------------------
+Verbose mode can be enabled via `-v, --verbose` option
+CONFIGURATION: https://docs.platformio.org/page/boards/espressif32/esp32dev.html
+PLATFORM: Espressif 32 (6.11.0) > Espressif ESP32 Dev Module
+HARDWARE: ESP32 240MHz, 320KB RAM, 4MB Flash
+DEBUG: Current (cmsis-dap) External (cmsis-dap, esp-bridge, esp-prog, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa)
+PACKAGES:
+ - framework-arduinoespressif32 @ 3.20017.241212+sha.dcc1105b
+ - tool-esptoolpy @ 1.40501.0 (4.5.1)
+ - toolchain-xtensa-esp32 @ 8.4.0+2021r2-patch5
+LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+LDF Modes: Finder ~ chain, Compatibility ~ soft
+Library Manager: Installing ESP Async WebServer
+Library Manager: Warning! More than one package has been found by ESP Async WebServer requirements:
+Library Manager:  - mathieucarbou/ESP Async WebServer@3.0.6
+Library Manager:  - zeed/ESP Async WebServer@1.2.3
+Library Manager:  - sbkila/ESP Async WebServer@1.2.3
+Library Manager: Please specify detailed REQUIREMENTS using package owner and version (shown above) to avoid name conflicts
+Unpacking 0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100%
+Library Manager: ESP Async WebServer@3.0.6 has been installed!
+Library Manager: Resolving dependencies...
+Library Manager: Installing mathieucarbou/Async TCP @ ^3.1.4
+Unpacking 0% 10% 20% 30% 40% 50% 60% 70% 80%
+Library Manager: Async TCP@3.1.4 has been installed!
+Library Manager: Installing esphome/ESPAsyncTCP-esphome @ ^2.0.0
+Unpacking 0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100%
+Library Manager: ESPAsyncTCP-esphome@2.0.0 has been installed!
+Library Manager: Installing Hash
+Library Manager: Installing khoih-prog/AsyncTCP_RP2040W @ ^1.2.0
+Unpacking 0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100%
+Library Manager: AsyncTCP_RP2040W@1.2.0 has been installed!
+Library Manager: Installing ESPAsyncTCP
+Library Manager: Warning! More than one package has been found by ESPAsyncTCP requirements:
+Library Manager:  - esp32async/ESPAsyncTCP@2.0.0
+Library Manager:  - me-no-dev/ESPAsyncTCP@2.0.0
+Library Manager: Please specify detailed REQUIREMENTS using package owner and version (shown above) to avoid name conflicts
+Unpacking 0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100%
+Library Manager: ESPAsyncTCP@2.0.0 has been installed!
+Library Manager: Installing ArduinoJson
+Unpacking 0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100%
+Library Manager: ArduinoJson@7.4.2 has been installed!
+Library Manager: Installing LittleFS_esp32
+Unpacking 0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100%
+Library Manager: LittleFS_esp32@1.0.6 has been installed!
+Found 39 compatible libraries
+Scanning dependencies...
+Dependency Graph
+|-- ESP Async WebServer @ 3.0.6
+|-- ESPAsyncTCP @ 2.0.0
+|-- ArduinoJson @ 7.4.2
+|-- LittleFS_esp32 @ 1.0.6
+|-- Async TCP @ 3.1.4
+|-- ESPmDNS @ 2.0.0
+|-- WiFi @ 2.0.0
+Building in release mode
+Compiling .pio\build\esp32dev\src\main.cpp.o
+Building .pio\build\esp32dev\bootloader.bin
+Generating partitions .pio\build\esp32dev\partitions.bin
+esptool.py v4.5.1
+Creating esp32 image...
+Merged 1 ELF section
+Successfully created esp32 image.
+Compiling .pio\build\esp32dev\libbcd\Async TCP\AsyncTCP.cpp.o
+Compiling .pio\build\esp32dev\lib623\WiFi\WiFi.cpp.o
+Compiling .pio\build\esp32dev\lib623\WiFi\WiFiAP.cpp.o
+Compiling .pio\build\esp32dev\lib623\WiFi\WiFiClient.cpp.o
+Compiling .pio\build\esp32dev\lib623\WiFi\WiFiGeneric.cpp.o
+Compiling .pio\build\esp32dev\lib623\WiFi\WiFiMulti.cpp.o
+Compiling .pio\build\esp32dev\lib623\WiFi\WiFiSTA.cpp.o
+Compiling .pio\build\esp32dev\lib623\WiFi\WiFiScan.cpp.o
+Compiling .pio\build\esp32dev\lib623\WiFi\WiFiServer.cpp.o
+Compiling .pio\build\esp32dev\lib623\WiFi\WiFiUdp.cpp.o
+Compiling .pio\build\esp32dev\lib990\AsyncTCP_RP2040W\AsyncPrinter.cpp.o
+
+Ошибки:
+In file included from .pio/libdeps/esp32dev/AsyncTCP_RP2040W/src/AsyncPrinter.h:51,
+                 from .pio/libdeps/esp32dev/AsyncTCP_RP2040W/src/AsyncPrinter.cpp:51:
+.pio/libdeps/esp32dev/AsyncTCP_RP2040W/src/AsyncTCP_RP2040W.h:73:4: error: #error For RASPBERRY_PI_PICO_W board using CYW43439 WiFi only
+   #error For RASPBERRY_PI_PICO_W board using CYW43439 WiFi only
+    ^~~~~
+*** [.pio\build\esp32dev\lib990\AsyncTCP_RP2040W\AsyncPrinter.cpp.o] Error 1
+src/main.cpp: In function 'void setup()':
+src/main.cpp:66:8: error: 'LittleFS' was not declared in this scope
+   if (!LittleFS.begin(true)) {
+        ^~~~~~~~
+src/main.cpp:66:8: note: suggested alternative: 'bitClear'
+   if (!LittleFS.begin(true)) {
+        ^~~~~~~~
+        bitClear
+src/main.cpp:73:3: error: 'loadStationsFromFile' was not declared in this scope
+   loadStationsFromFile();
+   ^~~~~~~~~~~~~~~~~~~~
+src/main.cpp:89:14: error: 'onWebSocketEvent' was not declared in this scope
+   ws.onEvent(onWebSocketEvent);
+              ^~~~~~~~~~~~~~~~
+src/main.cpp:89:14: note: suggested alternative: 'AsyncWebSocketClient'
+   ws.onEvent(onWebSocketEvent);
+              ^~~~~~~~~~~~~~~~
+              AsyncWebSocketClient
+src/main.cpp:93:3: error: 'setupAPIRoutes' was not declared in this scope
+   setupAPIRoutes();
+   ^~~~~~~~~~~~~~
+src/main.cpp:96:27: error: 'LittleFS' was not declared in this scope
+   server.serveStatic("/", LittleFS, "/www/").setDefaultFile("index.html");
+                           ^~~~~~~~
+src/main.cpp:96:27: note: suggested alternative: 'bitClear'
+   server.serveStatic("/", LittleFS, "/www/").setDefaultFile("index.html");
+                           ^~~~~~~~
+                           bitClear
+src/main.cpp: In lambda function:
+src/main.cpp:100:19: error: 'LittleFS' is not captured
+     request->send(LittleFS, "/www/index.html", "text/html");
+                   ^~~~~~~~
+src/main.cpp:99:29: note: the lambda has no capture-default
+   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+                             ^
+src/main.cpp:96:27: note: '<typeprefixerror>LittleFS' declared here
+   server.serveStatic("/", LittleFS, "/www/").setDefaultFile("index.html");
+                           ^~~~~~~~
+src/main.cpp: In function 'void setup()':
+src/main.cpp:113:3: error: 'createTestStations' was not declared in this scope
+   createTestStations();
+   ^~~~~~~~~~~~~~~~~~
+src/main.cpp: In function 'void loop()':
+src/main.cpp:121:5: error: 'updateStationsData' was not declared in this scope
+     updateStationsData();
+     ^~~~~~~~~~~~~~~~~~
+src/main.cpp:122:5: error: 'broadcastStationsUpdate' was not declared in this scope
+     broadcastStationsUpdate();
+     ^~~~~~~~~~~~~~~~~~~~~~~
+src/main.cpp: In lambda function:
+src/main.cpp:137:28: warning: 'DynamicJsonDocument' is deprecated: use JsonDocument instead [-Wdeprecated-declarations]
+     DynamicJsonDocument doc(8192);
+                            ^
+In file included from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp:65,
+                 from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h:9,
+                 from src/main.cpp:17:
+.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/compatibility.hpp:125:58: note: declared here
+ class ARDUINOJSON_DEPRECATED("use JsonDocument instead") DynamicJsonDocument
+                                                          ^~~~~~~~~~~~~~~~~~~
+src/main.cpp:141:53: warning: 'ArduinoJson::V742PB22::JsonObject ArduinoJson::V742PB22::JsonArray::createNestedObject() const' is deprecated: use add<JsonObject>() instead [-Wdeprecated-declarations]
+       JsonObject station = array.createNestedObject();
+                                                     ^
+In file included from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp:65,
+                 from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h:9,
+                 from src/main.cpp:17:
+.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/compatibility.hpp:140:19: note: declared here
+ inline JsonObject JsonArray::createNestedObject() const {
+                   ^~~~~~~~~
+src/main.cpp:142:7: error: 'stationToJson' was not declared in this scope
+       stationToJson(stations[i], station);
+       ^~~~~~~~~~~~~
+src/main.cpp:142:7: note: suggested alternative: 'stationCount'
+       stationToJson(stations[i], station);
+       ^~~~~~~~~~~~~
+       stationCount
+src/main.cpp: In lambda function:
+src/main.cpp:152:30: warning: 'DynamicJsonDocument' is deprecated: use JsonDocument instead [-Wdeprecated-declarations]
+       DynamicJsonDocument doc(1024);
+                              ^
+In file included from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp:65,
+                 from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h:9,
+                 from src/main.cpp:17:
+.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/compatibility.hpp:125:58: note: declared here
+ class ARDUINOJSON_DEPRECATED("use JsonDocument instead") DynamicJsonDocument
+                                                          ^~~~~~~~~~~~~~~~~~~
+src/main.cpp:157:9: error: 'jsonToStation' was not declared in this scope
+         jsonToStation(doc, newStation);
+         ^~~~~~~~~~~~~
+src/main.cpp:157:9: note: suggested alternative: 'newStation'
+         jsonToStation(doc, newStation);
+         ^~~~~~~~~~~~~
+         newStation
+src/main.cpp:158:25: error: 'getNextStationId' was not declared in this scope
+         newStation.id = getNextStationId();
+                         ^~~~~~~~~~~~~~~~
+src/main.cpp:158:25: note: suggested alternative: 'newStation'
+         newStation.id = getNextStationId();
+                         ^~~~~~~~~~~~~~~~
+                         newStation
+src/main.cpp:161:9: error: 'saveStationsToFile' was not declared in this scope
+         saveStationsToFile();
+         ^~~~~~~~~~~~~~~~~~
+src/main.cpp:164:40: warning: 'DynamicJsonDocument' is deprecated: use JsonDocument instead [-Wdeprecated-declarations]
+         DynamicJsonDocument responseDoc(1024);
+                                        ^
+In file included from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp:65,
+                 from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h:9,
+                 from src/main.cpp:17:
+.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/compatibility.hpp:125:58: note: declared here
+ class ARDUINOJSON_DEPRECATED("use JsonDocument instead") DynamicJsonDocument
+                                                          ^~~~~~~~~~~~~~~~~~~
+src/main.cpp:165:9: error: 'stationToJson' was not declared in this scope
+         stationToJson(newStation, responseDoc);
+         ^~~~~~~~~~~~~
+src/main.cpp:165:9: note: suggested alternative: 'stationCount'
+         stationToJson(newStation, responseDoc);
+         ^~~~~~~~~~~~~
+         stationCount
+src/main.cpp: In lambda function:
+src/main.cpp:179:26: error: 'findStationIndex' was not declared in this scope
+       int stationIndex = findStationIndex(stationId);
+                          ^~~~~~~~~~~~~~~~
+src/main.cpp:179:26: note: suggested alternative: 'stationIndex'
+       int stationIndex = findStationIndex(stationId);
+                          ^~~~~~~~~~~~~~~~
+                          stationIndex
+src/main.cpp:185:30: warning: 'DynamicJsonDocument' is deprecated: use JsonDocument instead [-Wdeprecated-declarations]
+       DynamicJsonDocument doc(1024);
+                              ^
+In file included from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp:65,
+                 from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h:9,
+                 from src/main.cpp:17:
+.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/compatibility.hpp:125:58: note: declared here
+ class ARDUINOJSON_DEPRECATED("use JsonDocument instead") DynamicJsonDocument
+                                                          ^~~~~~~~~~~~~~~~~~~
+src/main.cpp:188:7: error: 'updateStationFromJson' was not declared in this scope
+       updateStationFromJson(stations[stationIndex], doc);
+       ^~~~~~~~~~~~~~~~~~~~~
+src/main.cpp:189:7: error: 'saveStationsToFile' was not declared in this scope
+       saveStationsToFile();
+       ^~~~~~~~~~~~~~~~~~
+src/main.cpp:192:38: warning: 'DynamicJsonDocument' is deprecated: use JsonDocument instead [-Wdeprecated-declarations]
+       DynamicJsonDocument responseDoc(1024);
+                                      ^
+In file included from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp:65,
+                 from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h:9,
+                 from src/main.cpp:17:
+.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/compatibility.hpp:125:58: note: declared here
+ class ARDUINOJSON_DEPRECATED("use JsonDocument instead") DynamicJsonDocument
+                                                          ^~~~~~~~~~~~~~~~~~~
+src/main.cpp:193:7: error: 'stationToJson' was not declared in this scope
+       stationToJson(stations[stationIndex], responseDoc);
+       ^~~~~~~~~~~~~
+src/main.cpp:193:7: note: suggested alternative: 'stationCount'
+       stationToJson(stations[stationIndex], responseDoc);
+       ^~~~~~~~~~~~~
+       stationCount
+src/main.cpp: In lambda function:
+src/main.cpp:203:24: error: 'findStationIndex' was not declared in this scope
+     int stationIndex = findStationIndex(stationId);
+                        ^~~~~~~~~~~~~~~~
+src/main.cpp:203:24: note: suggested alternative: 'stationIndex'
+     int stationIndex = findStationIndex(stationId);
+                        ^~~~~~~~~~~~~~~~
+                        stationIndex
+src/main.cpp:215:5: error: 'saveStationsToFile' was not declared in this scope
+     saveStationsToFile();
+     ^~~~~~~~~~~~~~~~~~
+src/main.cpp: In lambda function:
+src/main.cpp:222:28: warning: 'DynamicJsonDocument' is deprecated: use JsonDocument instead [-Wdeprecated-declarations]
+     DynamicJsonDocument doc(1024);
+                            ^
+In file included from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp:65,
+                 from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h:9,
+                 from src/main.cpp:17:
+.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/compatibility.hpp:125:58: note: declared here
+ class ARDUINOJSON_DEPRECATED("use JsonDocument instead") DynamicJsonDocument
+                                                          ^~~~~~~~~~~~~~~~~~~
+src/main.cpp:225:49: warning: 'ArduinoJson::V742PB22::JsonObject ArduinoJson::V742PB22::JsonArray::createNestedObject() const' is deprecated: use add<JsonObject>() instead [-Wdeprecated-declarations]
+     JsonObject board = array.createNestedObject();
+                                                 ^
+In file included from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp:65,
+                 from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h:9,
+                 from src/main.cpp:17:
+.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/compatibility.hpp:140:19: note: declared here
+ inline JsonObject JsonArray::createNestedObject() const {
+                   ^~~~~~~~~
+src/main.cpp: In function 'void onWebSocketEvent(AsyncWebSocket*, AsyncWebSocketClient*, AwsEventType, void*, uint8_t*, size_t)':
+src/main.cpp:246:7: error: 'sendStationsToClient' was not declared in this scope
+       sendStationsToClient(client);
+       ^~~~~~~~~~~~~~~~~~~~
+src/main.cpp:246:7: note: suggested alternative: 'stationCount'
+       sendStationsToClient(client);
+       ^~~~~~~~~~~~~~~~~~~~
+       stationCount
+src/main.cpp:259:7: error: 'handleWebSocketMessage' was not declared in this scope
+       handleWebSocketMessage(client, data, len);
+       ^~~~~~~~~~~~~~~~~~~~~~
+src/main.cpp:259:7: note: suggested alternative: 'AsyncWebSocketMessage'
+       handleWebSocketMessage(client, data, len);
+       ^~~~~~~~~~~~~~~~~~~~~~
+       AsyncWebSocketMessage
+src/main.cpp: In function 'void handleWebSocketMessage(AsyncWebSocketClient*, uint8_t*, size_t)':
+src/main.cpp:266:26: warning: 'DynamicJsonDocument' is deprecated: use JsonDocument instead [-Wdeprecated-declarations]
+   DynamicJsonDocument doc(1024);
+                          ^
+In file included from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp:65,
+                 from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h:9,
+                 from src/main.cpp:17:
+.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/compatibility.hpp:125:58: note: declared here
+ class ARDUINOJSON_DEPRECATED("use JsonDocument instead") DynamicJsonDocument
+                                                          ^~~~~~~~~~~~~~~~~~~
+src/main.cpp:273:24: error: 'findStationIndex' was not declared in this scope
+     int stationIndex = findStationIndex(stationId);
+                        ^~~~~~~~~~~~~~~~
+src/main.cpp:273:24: note: suggested alternative: 'stationIndex'
+     int stationIndex = findStationIndex(stationId);
+                        ^~~~~~~~~~~~~~~~
+                        stationIndex
+src/main.cpp:276:7: error: 'updateStationFromJson' was not declared in this scope
+       updateStationFromJson(stations[stationIndex], doc["data"]);
+       ^~~~~~~~~~~~~~~~~~~~~
+src/main.cpp:277:7: error: 'saveStationsToFile' was not declared in this scope
+       saveStationsToFile();
+       ^~~~~~~~~~~~~~~~~~
+src/main.cpp:278:7: error: 'broadcastStationsUpdate' was not declared in this scope
+       broadcastStationsUpdate();
+       ^~~~~~~~~~~~~~~~~~~~~~~
+src/main.cpp: In function 'void broadcastStationsUpdate()':
+src/main.cpp:285:26: warning: 'DynamicJsonDocument' is deprecated: use JsonDocument instead [-Wdeprecated-declarations]
+   DynamicJsonDocument doc(8192);
+                          ^
+In file included from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp:65,
+                 from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h:9,
+                 from src/main.cpp:17:
+.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/compatibility.hpp:125:58: note: declared here
+ class ARDUINOJSON_DEPRECATED("use JsonDocument instead") DynamicJsonDocument
+                                                          ^~~~~~~~~~~~~~~~~~~
+src/main.cpp:287:49: warning: 'ArduinoJson::V742PB22::JsonArray ArduinoJson::V742PB22::JsonDocument::createNestedArray(TChar*) [with TChar = const char]' is deprecated: use doc[key].to<JsonArray>() instead [-Wdeprecated-declarations]
+   JsonArray array = doc.createNestedArray("data");
+                                                 ^
+In file included from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp:42,
+                 from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h:9,
+                 from src/main.cpp:17:
+.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Document/JsonDocument.hpp:356:13: note: declared here
+   JsonArray createNestedArray(TChar* key) {
+             ^~~~~~~~~~~~~~~~~
+src/main.cpp:290:51: warning: 'ArduinoJson::V742PB22::JsonObject ArduinoJson::V742PB22::JsonArray::createNestedObject() const' is deprecated: use add<JsonObject>() instead [-Wdeprecated-declarations]
+     JsonObject station = array.createNestedObject();
+                                                   ^
+In file included from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp:65,
+                 from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h:9,
+                 from src/main.cpp:17:
+.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/compatibility.hpp:140:19: note: declared here
+ inline JsonObject JsonArray::createNestedObject() const {
+                   ^~~~~~~~~
+src/main.cpp:291:5: error: 'stationToJson' was not declared in this scope
+     stationToJson(stations[i], station);
+     ^~~~~~~~~~~~~
+src/main.cpp:291:5: note: suggested alternative: 'stationCount'
+     stationToJson(stations[i], station);
+     ^~~~~~~~~~~~~
+     stationCount
+src/main.cpp: In function 'void sendStationsToClient(AsyncWebSocketClient*)':
+src/main.cpp:301:26: warning: 'DynamicJsonDocument' is deprecated: use JsonDocument instead [-Wdeprecated-declarations]
+   DynamicJsonDocument doc(8192);
+                          ^
+In file included from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp:65,
+                 from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h:9,
+                 from src/main.cpp:17:
+.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/compatibility.hpp:125:58: note: declared here
+ class ARDUINOJSON_DEPRECATED("use JsonDocument instead") DynamicJsonDocument
+                                                          ^~~~~~~~~~~~~~~~~~~
+src/main.cpp:303:49: warning: 'ArduinoJson::V742PB22::JsonArray ArduinoJson::V742PB22::JsonDocument::createNestedArray(TChar*) [with TChar = const char]' is deprecated: use doc[key].to<JsonArray>() instead [-Wdeprecated-declarations]
+   JsonArray array = doc.createNestedArray("data");
+                                                 ^
+In file included from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp:42,
+                 from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h:9,
+                 from src/main.cpp:17:
+.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Document/JsonDocument.hpp:356:13: note: declared here
+   JsonArray createNestedArray(TChar* key) {
+             ^~~~~~~~~~~~~~~~~
+src/main.cpp:306:51: warning: 'ArduinoJson::V742PB22::JsonObject ArduinoJson::V742PB22::JsonArray::createNestedObject() const' is deprecated: use add<JsonObject>() instead [-Wdeprecated-declarations]
+     JsonObject station = array.createNestedObject();
+                                                   ^
+In file included from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp:65,
+                 from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h:9,
+                 from src/main.cpp:17:
+.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/compatibility.hpp:140:19: note: declared here
+ inline JsonObject JsonArray::createNestedObject() const {
+                   ^~~~~~~~~
+src/main.cpp:307:5: error: 'stationToJson' was not declared in this scope
+     stationToJson(stations[i], station);
+     ^~~~~~~~~~~~~
+src/main.cpp:307:5: note: suggested alternative: 'stationCount'
+     stationToJson(stations[i], station);
+     ^~~~~~~~~~~~~
+     stationCount
+src/main.cpp: In function 'void jsonToStation(const ArduinoJson::V742PB22::JsonObject&, ChargingStation&)':
+src/main.cpp:341:37: warning: 'bool ArduinoJson::V742PB22::JsonObject::containsKey(const TString&) const [with TString = char [12]; typename ArduinoJson::V742PB22::detail::enable_if<ArduinoJson::V742PB22::detail::IsString<TString>::value, int>::type <anonymous> = 0]' is deprecated: use obj[key].is<T>() instead [-Wdeprecated-declarations]
+   if (json.containsKey("displayName")) station.displayName = json["displayName"].as<String>();
+                                     ^
+In file included from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp:39,
+                 from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h:9,
+                 from src/main.cpp:17:
+.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Object/JsonObject.hpp:168:8: note: declared here
+   bool containsKey(const TString& key) const {
+        ^~~~~~~~~~~
+src/main.cpp:342:39: warning: 'bool ArduinoJson::V742PB22::JsonObject::containsKey(const TString&) const [with TString = char [14]; typename ArduinoJson::V742PB22::detail::enable_if<ArduinoJson::V742PB22::detail::IsString<TString>::value, int>::type <anonymous> = 0]' is deprecated: use obj[key].is<T>() instead [-Wdeprecated-declarations]
+   if (json.containsKey("technicalName")) station.technicalName = json["technicalName"].as<String>();
+                                       ^
+In file included from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp:39,
+                 from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h:9,
+                 from src/main.cpp:17:
+.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Object/JsonObject.hpp:168:8: note: declared here
+   bool containsKey(const TString& key) const {
+        ^~~~~~~~~~~
+src/main.cpp:343:30: warning: 'bool ArduinoJson::V742PB22::JsonObject::containsKey(const TString&) const [with TString = char [5]; typename ArduinoJson::V742PB22::detail::enable_if<ArduinoJson::V742PB22::detail::IsString<TString>::value, int>::type <anonymous> = 0]' is deprecated: use obj[key].is<T>() instead [-Wdeprecated-declarations]
+   if (json.containsKey("type")) station.type = json["type"].as<String>();
+                              ^
+In file included from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp:39,
+                 from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h:9,
+                 from src/main.cpp:17:
+.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Object/JsonObject.hpp:168:8: note: declared here
+   bool containsKey(const TString& key) const {
+        ^~~~~~~~~~~
+src/main.cpp:344:32: warning: 'bool ArduinoJson::V742PB22::JsonObject::containsKey(const TString&) const [with TString = char [7]; typename ArduinoJson::V742PB22::detail::enable_if<ArduinoJson::V742PB22::detail::IsString<TString>::value, int>::type <anonymous> = 0]' is deprecated: use obj[key].is<T>() instead [-Wdeprecated-declarations]
+   if (json.containsKey("status")) station.status = json["status"].as<String>();
+                                ^
+In file included from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp:39,
+                 from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h:9,
+                 from src/main.cpp:17:
+.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Object/JsonObject.hpp:168:8: note: declared here
+   bool containsKey(const TString& key) const {
+        ^~~~~~~~~~~
+src/main.cpp:345:34: warning: 'bool ArduinoJson::V742PB22::JsonObject::containsKey(const TString&) const [with TString = char [9]; typename ArduinoJson::V742PB22::detail::enable_if<ArduinoJson::V742PB22::detail::IsString<TString>::value, int>::type <anonymous> = 0]' is deprecated: use obj[key].is<T>() instead [-Wdeprecated-declarations]
+   if (json.containsKey("maxPower")) station.maxPower = json["maxPower"];
+                                  ^
+In file included from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp:39,
+                 from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h:9,
+                 from src/main.cpp:17:
+.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Object/JsonObject.hpp:168:8: note: declared here
+   bool containsKey(const TString& key) const {
+        ^~~~~~~~~~~
+src/main.cpp:346:38: warning: 'bool ArduinoJson::V742PB22::JsonObject::containsKey(const TString&) const [with TString = char [13]; typename ArduinoJson::V742PB22::detail::enable_if<ArduinoJson::V742PB22::detail::IsString<TString>::value, int>::type <anonymous> = 0]' is deprecated: use obj[key].is<T>() instead [-Wdeprecated-declarations]
+   if (json.containsKey("currentPower")) station.currentPower = json["currentPower"];
+                                      ^
+In file included from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp:39,
+                 from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h:9,
+                 from src/main.cpp:17:
+.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Object/JsonObject.hpp:168:8: note: declared here
+   bool containsKey(const TString& key) const {
+        ^~~~~~~~~~~
+src/main.cpp:347:40: warning: 'bool ArduinoJson::V742PB22::JsonObject::containsKey(const TString&) const [with TString = char [15]; typename ArduinoJson::V742PB22::detail::enable_if<ArduinoJson::V742PB22::detail::IsString<TString>::value, int>::type <anonymous> = 0]' is deprecated: use obj[key].is<T>() instead [-Wdeprecated-declarations]
+   if (json.containsKey("availablePower")) station.availablePower = json["availablePower"];
+                                        ^
+In file included from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp:39,
+                 from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h:9,
+                 from src/main.cpp:17:
+.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Object/JsonObject.hpp:168:8: note: declared here
+   bool containsKey(const TString& key) const {
+        ^~~~~~~~~~~
+src/main.cpp:348:38: warning: 'bool ArduinoJson::V742PB22::JsonObject::containsKey(const TString&) const [with TString = char [13]; typename ArduinoJson::V742PB22::detail::enable_if<ArduinoJson::V742PB22::detail::IsString<TString>::value, int>::type <anonymous> = 0]' is deprecated: use obj[key].is<T>() instead [-Wdeprecated-declarations]
+   if (json.containsKey("carConnected")) station.carConnected = json["carConnected"];
+                                      ^
+In file included from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp:39,
+                 from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h:9,
+                 from src/main.cpp:17:
+.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Object/JsonObject.hpp:168:8: note: declared here
+   bool containsKey(const TString& key) const {
+        ^~~~~~~~~~~
+src/main.cpp:349:41: warning: 'bool ArduinoJson::V742PB22::JsonObject::containsKey(const TString&) const [with TString = char [16]; typename ArduinoJson::V742PB22::detail::enable_if<ArduinoJson::V742PB22::detail::IsString<TString>::value, int>::type <anonymous> = 0]' is deprecated: use obj[key].is<T>() instead [-Wdeprecated-declarations]
+   if (json.containsKey("chargingAllowed")) station.chargingAllowed = json["chargingAllowed"];
+                                         ^
+In file included from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp:39,
+                 from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h:9,
+                 from src/main.cpp:17:
+.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Object/JsonObject.hpp:168:8: note: declared here
+   bool containsKey(const TString& key) const {
+        ^~~~~~~~~~~
+src/main.cpp:350:34: warning: 'bool ArduinoJson::V742PB22::JsonObject::containsKey(const TString&) const [with TString = char [9]; typename ArduinoJson::V742PB22::detail::enable_if<ArduinoJson::V742PB22::detail::IsString<TString>::value, int>::type <anonymous> = 0]' is deprecated: use obj[key].is<T>() instead [-Wdeprecated-declarations]
+   if (json.containsKey("hasError")) station.hasError = json["hasError"];
+                                  ^
+In file included from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp:39,
+                 from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h:9,
+                 from src/main.cpp:17:
+.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Object/JsonObject.hpp:168:8: note: declared here
+   bool containsKey(const TString& key) const {
+        ^~~~~~~~~~~
+src/main.cpp:351:38: warning: 'bool ArduinoJson::V742PB22::JsonObject::containsKey(const TString&) const [with TString = char [13]; typename ArduinoJson::V742PB22::detail::enable_if<ArduinoJson::V742PB22::detail::IsString<TString>::value, int>::type <anonymous> = 0]' is deprecated: use obj[key].is<T>() instead [-Wdeprecated-declarations]
+   if (json.containsKey("errorMessage")) station.errorMessage = json["errorMessage"].as<String>();
+                                      ^
+In file included from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp:39,
+                 from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h:9,
+                 from src/main.cpp:17:
+.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Object/JsonObject.hpp:168:8: note: declared here
+   bool containsKey(const TString& key) const {
+        ^~~~~~~~~~~
+src/main.cpp:352:34: warning: 'bool ArduinoJson::V742PB22::JsonObject::containsKey(const TString&) const [with TString = char [9]; typename ArduinoJson::V742PB22::detail::enable_if<ArduinoJson::V742PB22::detail::IsString<TString>::value, int>::type <anonymous> = 0]' is deprecated: use obj[key].is<T>() instead [-Wdeprecated-declarations]
+   if (json.containsKey("masterId")) station.masterId = json["masterId"];
+                                  ^
+In file included from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp:39,
+                 from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h:9,
+                 from src/main.cpp:17:
+.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Object/JsonObject.hpp:168:8: note: declared here
+   bool containsKey(const TString& key) const {
+        ^~~~~~~~~~~
+src/main.cpp:353:35: warning: 'bool ArduinoJson::V742PB22::JsonObject::containsKey(const TString&) const [with TString = char [10]; typename ArduinoJson::V742PB22::detail::enable_if<ArduinoJson::V742PB22::detail::IsString<TString>::value, int>::type <anonymous> = 0]' is deprecated: use obj[key].is<T>() instead [-Wdeprecated-declarations]
+   if (json.containsKey("voltageL1")) station.voltageL1 = json["voltageL1"];
+                                   ^
+In file included from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp:39,
+                 from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h:9,
+                 from src/main.cpp:17:
+.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Object/JsonObject.hpp:168:8: note: declared here
+   bool containsKey(const TString& key) const {
+        ^~~~~~~~~~~
+src/main.cpp:354:35: warning: 'bool ArduinoJson::V742PB22::JsonObject::containsKey(const TString&) const [with TString = char [10]; typename ArduinoJson::V742PB22::detail::enable_if<ArduinoJson::V742PB22::detail::IsString<TString>::value, int>::type <anonymous> = 0]' is deprecated: use obj[key].is<T>() instead [-Wdeprecated-declarations]
+   if (json.containsKey("voltageL2")) station.voltageL2 = json["voltageL2"];
+                                   ^
+In file included from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp:39,
+                 from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h:9,
+                 from src/main.cpp:17:
+.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Object/JsonObject.hpp:168:8: note: declared here
+   bool containsKey(const TString& key) const {
+        ^~~~~~~~~~~
+src/main.cpp:355:35: warning: 'bool ArduinoJson::V742PB22::JsonObject::containsKey(const TString&) const [with TString = char [10]; typename ArduinoJson::V742PB22::detail::enable_if<ArduinoJson::V742PB22::detail::IsString<TString>::value, int>::type <anonymous> = 0]' is deprecated: use obj[key].is<T>() instead [-Wdeprecated-declarations]
+   if (json.containsKey("voltageL3")) station.voltageL3 = json["voltageL3"];
+                                   ^
+In file included from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp:39,
+                 from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h:9,
+                 from src/main.cpp:17:
+.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Object/JsonObject.hpp:168:8: note: declared here
+   bool containsKey(const TString& key) const {
+        ^~~~~~~~~~~
+src/main.cpp:356:35: warning: 'bool ArduinoJson::V742PB22::JsonObject::containsKey(const TString&) const [with TString = char [10]; typename ArduinoJson::V742PB22::detail::enable_if<ArduinoJson::V742PB22::detail::IsString<TString>::value, int>::type <anonymous> = 0]' is deprecated: use obj[key].is<T>() instead [-Wdeprecated-declarations]
+   if (json.containsKey("currentL1")) station.currentL1 = json["currentL1"];
+                                   ^
+In file included from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp:39,
+                 from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h:9,
+                 from src/main.cpp:17:
+.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Object/JsonObject.hpp:168:8: note: declared here
+   bool containsKey(const TString& key) const {
+        ^~~~~~~~~~~
+src/main.cpp:357:35: warning: 'bool ArduinoJson::V742PB22::JsonObject::containsKey(const TString&) const [with TString = char [10]; typename ArduinoJson::V742PB22::detail::enable_if<ArduinoJson::V742PB22::detail::IsString<TString>::value, int>::type <anonymous> = 0]' is deprecated: use obj[key].is<T>() instead [-Wdeprecated-declarations]
+   if (json.containsKey("currentL2")) station.currentL2 = json["currentL2"];
+                                   ^
+In file included from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp:39,
+                 from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h:9,
+                 from src/main.cpp:17:
+.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Object/JsonObject.hpp:168:8: note: declared here
+   bool containsKey(const TString& key) const {
+        ^~~~~~~~~~~
+src/main.cpp:358:35: warning: 'bool ArduinoJson::V742PB22::JsonObject::containsKey(const TString&) const [with TString = char [10]; typename ArduinoJson::V742PB22::detail::enable_if<ArduinoJson::V742PB22::detail::IsString<TString>::value, int>::type <anonymous> = 0]' is deprecated: use obj[key].is<T>() instead [-Wdeprecated-declarations]
+   if (json.containsKey("currentL3")) station.currentL3 = json["currentL3"];
+                                   ^
+In file included from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp:39,
+                 from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h:9,
+                 from src/main.cpp:17:
+.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Object/JsonObject.hpp:168:8: note: declared here
+   bool containsKey(const TString& key) const {
+        ^~~~~~~~~~~
+src/main.cpp: In function 'void updateStationFromJson(ChargingStation&, const ArduinoJson::V742PB22::JsonObject&)':
+src/main.cpp:364:24: error: 'getCurrentTime' was not declared in this scope
+   station.lastUpdate = getCurrentTime();
+                        ^~~~~~~~~~~~~~
+src/main.cpp:364:24: note: suggested alternative: 'getLocalTime'
+   station.lastUpdate = getCurrentTime();
+                        ^~~~~~~~~~~~~~
+                        getLocalTime
+src/main.cpp: In function 'void createTestStations()':
+src/main.cpp:414:5: error: 'saveStationsToFile' was not declared in this scope
+     saveStationsToFile();
+     ^~~~~~~~~~~~~~~~~~
+src/main.cpp:414:5: note: suggested alternative: 'sendStationsToClient'
+     saveStationsToFile();
+     ^~~~~~~~~~~~~~~~~~
+     sendStationsToClient
+src/main.cpp: In function 'void saveStationsToFile()':
+src/main.cpp:453:15: error: 'LittleFS' was not declared in this scope
+   File file = LittleFS.open("/stations.json", "w");
+               ^~~~~~~~
+src/main.cpp:453:15: note: suggested alternative: 'bitClear'
+   File file = LittleFS.open("/stations.json", "w");
+               ^~~~~~~~
+               bitClear
+src/main.cpp:459:26: warning: 'DynamicJsonDocument' is deprecated: use JsonDocument instead [-Wdeprecated-declarations]
+   DynamicJsonDocument doc(8192);
+                          ^
+In file included from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp:65,
+                 from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h:9,
+                 from src/main.cpp:17:
+.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/compatibility.hpp:125:58: note: declared here
+ class ARDUINOJSON_DEPRECATED("use JsonDocument instead") DynamicJsonDocument
+                                                          ^~~~~~~~~~~~~~~~~~~
+src/main.cpp:463:51: warning: 'ArduinoJson::V742PB22::JsonObject ArduinoJson::V742PB22::JsonArray::createNestedObject() const' is deprecated: use add<JsonObject>() instead [-Wdeprecated-declarations]
+     JsonObject station = array.createNestedObject();
+                                                   ^
+In file included from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp:65,
+                 from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h:9,
+                 from src/main.cpp:17:
+.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/compatibility.hpp:140:19: note: declared here
+ inline JsonObject JsonArray::createNestedObject() const {
+                   ^~~~~~~~~
+src/main.cpp: In function 'void loadStationsFromFile()':
+src/main.cpp:473:8: error: 'LittleFS' was not declared in this scope
+   if (!LittleFS.exists("/stations.json")) {
+        ^~~~~~~~
+src/main.cpp:473:8: note: suggested alternative: 'bitClear'
+   if (!LittleFS.exists("/stations.json")) {
+        ^~~~~~~~
+        bitClear
+src/main.cpp:478:15: error: 'LittleFS' was not declared in this scope
+   File file = LittleFS.open("/stations.json", "r");
+               ^~~~~~~~
+src/main.cpp:478:15: note: suggested alternative: 'bitClear'
+   File file = LittleFS.open("/stations.json", "r");
+               ^~~~~~~~
+               bitClear
+src/main.cpp:484:26: warning: 'DynamicJsonDocument' is deprecated: use JsonDocument instead [-Wdeprecated-declarations]
+   DynamicJsonDocument doc(8192);
+                          ^
+In file included from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp:65,
+                 from .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h:9,
+                 from src/main.cpp:17:
+.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/compatibility.hpp:125:58: note: declared here
+ class ARDUINOJSON_DEPRECATED("use JsonDocument instead") DynamicJsonDocument
+                                                          ^~~~~~~~~~~~~~~~~~~
+*** [.pio\build\esp32dev\src\main.cpp.o] Error 1
+========================== [FAILED] Took 9.98 seconds ==========================
+
+
+==================================================
+🔄 Сборка файловой системы
+==================================================
+✅ Сборка файловой системы - УСПЕШНО
+Вывод:
+Processing esp32dev (platform: espressif32; board: esp32dev; framework: arduino)
+--------------------------------------------------------------------------------
+Verbose mode can be enabled via `-v, --verbose` option
+CONFIGURATION: https://docs.platformio.org/page/boards/espressif32/esp32dev.html
+PLATFORM: Espressif 32 (6.11.0) > Espressif ESP32 Dev Module
+HARDWARE: ESP32 240MHz, 320KB RAM, 4MB Flash
+DEBUG: Current (cmsis-dap) External (cmsis-dap, esp-bridge, esp-prog, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa)
+PACKAGES:
+ - framework-arduinoespressif32 @ 3.20017.241212+sha.dcc1105b
+ - tool-esptoolpy @ 1.40501.0 (4.5.1)
+ - tool-mklittlefs @ 1.203.210628 (2.3)
+ - toolchain-xtensa-esp32 @ 8.4.0+2021r2-patch5
+LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+LDF Modes: Finder ~ chain, Compatibility ~ soft
+Found 39 compatible libraries
+Scanning dependencies...
+Dependency Graph
+|-- ESP Async WebServer @ 3.0.6
+|-- ESPAsyncTCP @ 2.0.0
+|-- ArduinoJson @ 7.4.2
+|-- LittleFS_esp32 @ 1.0.6
+|-- Async TCP @ 3.1.4
+|-- ESPmDNS @ 2.0.0
+|-- WiFi @ 2.0.0
+Building in release mode
+Building FS image from 'data' directory to .pio\build\esp32dev\littlefs.bin
+/stations.json
+/www/index.html
+========================= [SUCCESS] Took 1.70 seconds =========================
+
+✅ Файловая система собрана успешно
+
+❌ Критические ошибки при сборке прошивки
