@@ -37,12 +37,7 @@ The core entity is the charging station with comprehensive monitoring capabiliti
 2. **Master Control**: Central management dashboard for all stations
 3. **Slave Control**: Individual station monitoring and control interface
 
-#### ESP32 Integration
-- Standalone web interface for embedded devices
-- Network scanning and automatic discovery
-- mDNS support for local network access
-- Real-time data synchronization with main system
-- Arduino IDE and PlatformIO support
+
 
 ## Data Flow
 
@@ -68,11 +63,7 @@ The core entity is the charging station with comprehensive monitoring capabiliti
 - **Database Tools**: Drizzle Kit for migrations
 - **Development Server**: tsx for TypeScript execution
 
-### ESP32 Dependencies
-- **WiFi Connectivity**: ESP32 built-in WiFi
-- **Web Server**: ESP32 WebServer library
-- **JSON Processing**: ArduinoJson library
-- **Network Discovery**: mDNS for local network broadcasting
+
 
 ## Deployment Strategy
 
@@ -88,17 +79,21 @@ The core entity is the charging station with comprehensive monitoring capabiliti
 - **Database**: Automatic PostgreSQL provisioning via Drizzle configuration
 - **Port Configuration**: Configurable host and port settings (default: 0.0.0.0:5000)
 
-### ESP32 Deployment
-- **Programming**: Arduino IDE or PlatformIO
-- **WiFi Configuration**: Hard-coded SSID/password in firmware
-- **Network Integration**: Automatic discovery by main system
-- **Local Access**: Direct IP access or mDNS name resolution
+
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
+
+### Очистка проекта от ненужных файлов (ЗАВЕРШЕНО)
+- June 25, 2025: Удалены все остатки Node.js backend и устаревшие файлы
+- Удалены папки: server/, shared/, esp32/
+- Удалены документационные файлы: MIGRATION_COMPLETE.md, C_SERVER_SUCCESS.md, IMPLEMENTATION_SUMMARY.md
+- Удалены скрипты запуска: start-simple.bat, start-windows.bat, run_full_app.sh и другие
+- Удалены конфигурационные файлы: tsconfig.json, components.json, postcss.config.js
+- Проект теперь содержит только необходимые файлы для работы
 
 ### Исправление проблем с обновлением данных станций (ЗАВЕРШЕНО)
 - June 25, 2025: Полностью исправлена система обновления данных станций

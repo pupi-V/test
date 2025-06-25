@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
 /**
- * Startup proxy for migrated C backend with integrated frontend
+ * Startup proxy for C backend with integrated frontend
  * This file serves as a bridge to start both the C server and frontend dev server
  */
 
-import { spawn, exec } from 'child_process';
+import { spawn } from 'child_process';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -16,7 +16,8 @@ const projectRoot = join(__dirname, '..');
 console.log('🔄 Starting EV Charging Station Management System...');
 
 // Build the C server
-const buildProcess = exec('make debug', { 
+console.log('🏗️ Building C server...');
+const buildProcess = spawn('make', ['debug'], {
   cwd: join(projectRoot, 'server_c'),
   stdio: 'inherit'
 });
@@ -73,9 +74,4 @@ buildProcess.on('close', (code) => {
     console.log('\n🛑 Shutting down servers...');
     serverProcess.kill('SIGTERM');
   });
-});
-
-buildProcess.on('error', (err) => {
-  console.error('❌ Error starting C server:', err);
-  process.exit(1);
 });

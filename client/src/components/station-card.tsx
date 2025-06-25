@@ -1,4 +1,4 @@
-import { ChargingStation } from "@shared/schema";
+import { ChargingStation } from "../types/schema";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2 } from "lucide-react";
