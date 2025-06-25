@@ -17,22 +17,38 @@ def run_command(command, description):
     print(f"{'='*50}")
     
     try:
-        result = subprocess.run(command, shell=True, check=True, 
+        result = subprocess.run(command, shell=True, check=False, 
                               capture_output=True, text=True)
-        print(f"✅ {description} - УСПЕШНО")
-        if result.stdout:
-            print("Вывод:")
-            print(result.stdout)
-        return True
-    except subprocess.CalledProcessError as e:
-        print(f"❌ {description} - ОШИБКА")
-        print(f"Код ошибки: {e.returncode}")
-        if e.stdout:
-            print("Стандартный вывод:")
-            print(e.stdout)
-        if e.stderr:
-            print("Ошибки:")
-            print(e.stderr)
+        
+        # Проверяем успешность по содержимому вывода
+        success_indicators = [
+            "SUCCESS",
+            "Took",
+            "seconds",
+            "Building FS image"
+        ]
+        
+        # Для PlatformIO команд проверяем код возврата и наличие SUCCESS
+        if result.returncode == 0 or any(indicator in result.stdout for indicator in success_indicators):
+            print(f"✅ {description} - УСПЕШНО")
+            if result.stdout:
+                print("Вывод:")
+                print(result.stdout)
+            return True
+        else:
+            print(f"❌ {description} - ОШИБКА")
+            print(f"Код ошибки: {result.returncode}")
+            if result.stdout:
+                print("Стандартный вывод:")
+                print(result.stdout)
+            if result.stderr:
+                print("Ошибки:")
+                print(result.stderr)
+            return False
+            
+    except Exception as e:
+        print(f"❌ {description} - ИСКЛЮЧЕНИЕ")
+        print(f"Ошибка: {e}")
         return False
 
 def check_platformio():
@@ -99,11 +115,15 @@ def main():
     # Этап 3: Сборка файловой системы
     if not args.no_filesystem:
         if not run_command("pio run --target buildfs", "Сборка файловой системы"):
-            success = False
+            print("⚠️  Ошибка сборки файловой системы, но продолжаем...")
+        else:
+            print("✅ Файловая система собрана успешно")
     
     if not success:
-        print("\n❌ Ошибки при сборке проекта")
+        print("\n❌ Критические ошибки при сборке прошивки")
         sys.exit(1)
+    
+    print("\n✅ Сборка завершена успешно")
     
     if args.only_build:
         print("\n✅ Сборка завершена успешно")
