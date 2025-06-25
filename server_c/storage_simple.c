@@ -13,7 +13,7 @@
 #include <unistd.h>
 
 // Глобальные переменные
-static char data_file_path[512] = "data/stations.json";
+static char data_file_path[512] = "../data/stations.json";
 static int next_id = 1;
 
 /**
@@ -307,7 +307,7 @@ int storage_update_station(int id, const charging_station_t *updates) {
             
             char *json_string = json_stringify(json_array);
             
-            FILE *file = fopen("../data/stations.json", "w");
+            FILE *file = fopen(data_file_path, "w");
             if (file) {
                 fputs(json_string, file);
                 fclose(file);

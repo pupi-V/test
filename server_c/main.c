@@ -270,6 +270,8 @@ void handle_request(const http_request_t *request, http_response_t *response) {
             }
             
             // Парсим JSON из тела запроса
+            printf("DEBUG: PATCH body length: %d, content: '%s'\n", (int)strlen(request->body), request->body);
+            
             if (strlen(request->body) == 0) {
                 http_set_response_status(response, 400, "Bad Request");
                 http_add_response_header(response, "Content-Type", "application/json; charset=utf-8");
@@ -296,6 +298,7 @@ void handle_request(const http_request_t *request, http_response_t *response) {
             if ((field_value = json_object_get(json_data, "displayName"))) {
                 const char* str_val = json_get_string(field_value);
                 if (str_val) {
+                    printf("DEBUG: Updating displayName from '%s' to '%s'\n", updated_station.display_name, str_val);
                     strncpy(updated_station.display_name, str_val, MAX_STRING_LENGTH - 1);
                     updated_station.display_name[MAX_STRING_LENGTH - 1] = '\0';
                 }
@@ -304,6 +307,7 @@ void handle_request(const http_request_t *request, http_response_t *response) {
             if ((field_value = json_object_get(json_data, "technicalName"))) {
                 const char* str_val = json_get_string(field_value);
                 if (str_val) {
+                    printf("DEBUG: Updating technicalName from '%s' to '%s'\n", updated_station.technical_name, str_val);
                     strncpy(updated_station.technical_name, str_val, MAX_STRING_LENGTH - 1);
                     updated_station.technical_name[MAX_STRING_LENGTH - 1] = '\0';
                 }
@@ -312,21 +316,28 @@ void handle_request(const http_request_t *request, http_response_t *response) {
             if ((field_value = json_object_get(json_data, "description"))) {
                 const char* str_val = json_get_string(field_value);
                 if (str_val) {
+                    printf("DEBUG: Updating description\n");
                     strncpy(updated_station.description, str_val, MAX_DESCRIPTION_LENGTH - 1);
                     updated_station.description[MAX_DESCRIPTION_LENGTH - 1] = '\0';
                 }
             }
             
             if ((field_value = json_object_get(json_data, "maxPower"))) {
-                updated_station.max_power = (float)json_get_number(field_value);
+                float new_power = (float)json_get_number(field_value);
+                printf("DEBUG: Updating maxPower from %.2f to %.2f\n", updated_station.max_power, new_power);
+                updated_station.max_power = new_power;
             }
             
             if ((field_value = json_object_get(json_data, "currentPower"))) {
-                updated_station.current_power = (float)json_get_number(field_value);
+                float new_power = (float)json_get_number(field_value);
+                printf("DEBUG: Updating currentPower from %.2f to %.2f\n", updated_station.current_power, new_power);
+                updated_station.current_power = new_power;
             }
             
             if ((field_value = json_object_get(json_data, "carConnection"))) {
-                updated_station.car_connection = json_get_bool(field_value);
+                int new_val = json_get_bool(field_value);
+                printf("DEBUG: Updating carConnection from %d to %d\n", updated_station.car_connection, new_val);
+                updated_station.car_connection = new_val;
             }
             
             if ((field_value = json_object_get(json_data, "carChargingPermission"))) {
