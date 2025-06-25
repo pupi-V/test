@@ -43,7 +43,26 @@ const char* password = "12345678";
    - CH340: https://sparks.gogo.co.nz/ch340.html
    - CP2102: https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers
 
-### 5️⃣ Сборка и загрузка через VS Code
+### 5️⃣ Подготовка веб-интерфейса
+
+Перед сборкой нужно скопировать полноценный веб-интерфейс из основного проекта:
+
+#### Автоматическое обновление веб-интерфейса:
+```bash
+# Сначала соберите основной проект (если еще не собран)
+cd .. && npm run build
+
+# Вернитесь в ESP32 проект
+cd esp32_project
+
+# Обновите веб-интерфейс
+python scripts/build_web_interface.py
+```
+
+#### Проверка веб-файлов:
+После выполнения скрипта в папке `data/www/` должен появиться полноценный веб-интерфейс с тем же дизайном, что и в основном проекте.
+
+### 6️⃣ Сборка и загрузка через VS Code
 
 #### Способ 1: Через интерфейс PlatformIO
 
@@ -77,17 +96,20 @@ pio run --target uploadfs
 #### Способ 3: Автоматический скрипт
 
 ```bash
-# Автоматическая сборка и загрузка
-python scripts/build_and_upload.py
+# Автоматическая сборка и загрузка с обновлением веб-интерфейса
+python scripts/build_and_upload.py --update-web
 
 # С указанием порта
-python scripts/build_and_upload.py --port COM3
+python scripts/build_and_upload.py --port COM3 --update-web
 
 # Только сборка
 python scripts/build_and_upload.py --only-build
+
+# Обновить только веб-интерфейс без загрузки
+python scripts/build_web_interface.py
 ```
 
-### 6️⃣ Мониторинг загрузки
+### 7️⃣ Мониторинг загрузки
 
 #### Стандартный Serial Monitor:
 1. **В PlatformIO**: `esp32dev → Monitor`
@@ -100,7 +122,7 @@ python scripts/monitor.py --filter success
 python scripts/monitor.py --save-log
 ```
 
-### 7️⃣ Проверка работы
+### 8️⃣ Проверка работы
 
 После успешной загрузки в Serial Monitor появится:
 
@@ -115,7 +137,7 @@ IP адрес: 192.168.4.1
 === Система готова к работе ===
 ```
 
-### 8️⃣ Доступ к веб-интерфейсу
+### 9️⃣ Доступ к веб-интерфейсу
 
 1. **Подключитесь к WiFi**: "ESP32_ChargingStations" (пароль: 12345678)
 2. **Откройте браузер**: http://192.168.4.1

@@ -95,6 +95,11 @@ void setup() {
   // Статические файлы веб-интерфейса
   server.serveStatic("/", LittleFS, "/www/").setDefaultFile("index.html");
   
+  // Обслуживание отдельных файлов с правильными MIME типами
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(LittleFS, "/www/index.html", "text/html");
+  });
+  
   // Обработка 404 ошибок
   server.onNotFound([](AsyncWebServerRequest *request) {
     request->send(404, "text/plain", "Страница не найдена");
