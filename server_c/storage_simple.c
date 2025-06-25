@@ -12,9 +12,13 @@
 #include <time.h>
 #include <unistd.h>
 
-// Глобальные переменные
+// Глобальные переменные для хранения данных в памяти
 static char data_file_path[512] = "../data/stations.json";
 static int next_id = 1;
+static charging_station_t* global_stations = NULL;
+static int global_stations_count = 0;
+static int global_stations_capacity = 0;
+static int data_initialized = 0;
 
 /**
  * Создает папку для данных если она не существует
@@ -156,79 +160,211 @@ json_value_t* station_to_json(const charging_station_t *station) {
 }
 
 /**
- * Преобразование JSON в структуру станции
+ * Преобразование JSON в структуру станции (только для переданных полей)
  */
 int station_from_json(const json_value_t *json, charging_station_t *station) {
     if (!json || !station) return -1;
     
+    // Инициализируем только обнуляемые поля, не все поля
     memset(station, 0, sizeof(charging_station_t));
     
-    // Упрощенная реализация
-    station->id = 1;
-    strcpy(station->display_name, "Default Station");
-    strcpy(station->technical_name, "DEFAULT-001");
-    strcpy(station->type, "slave");
-    strcpy(station->status, "available");
-    station->max_power = 22.0;
-    station->current_power = 0.0;
+    // Парсим только переданные поля из JSON
+    if (json->type == JSON_OBJECT) {
+        json_value_t *value;
+        
+        if ((value = json_object_get(json, "displayName"))) {
+            const char* str_val = json_get_string(value);
+            if (str_val) {
+                strncpy(station->display_name, str_val, MAX_STRING_LENGTH - 1);
+            }
+        }
+        
+        if ((value = json_object_get(json, "technicalName"))) {
+            const char* str_val = json_get_string(value);
+            if (str_val) {
+                strncpy(station->technical_name, str_val, MAX_STRING_LENGTH - 1);
+            }
+        }
+        
+        if ((value = json_object_get(json, "type"))) {
+            const char* str_val = json_get_string(value);
+            if (str_val) {
+                strncpy(station->type, str_val, MAX_STRING_LENGTH - 1);
+            }
+        }
+        
+        if ((value = json_object_get(json, "status"))) {
+            const char* str_val = json_get_string(value);
+            if (str_val) {
+                strncpy(station->status, str_val, MAX_STRING_LENGTH - 1);
+            }
+        }
+        
+        if ((value = json_object_get(json, "description"))) {
+            const char* str_val = json_get_string(value);
+            if (str_val) {
+                strncpy(station->description, str_val, MAX_DESCRIPTION_LENGTH - 1);
+            }
+        }
+        
+        if ((value = json_object_get(json, "ipAddress"))) {
+            const char* str_val = json_get_string(value);
+            if (str_val) {
+                strncpy(station->ip_address, str_val, MAX_STRING_LENGTH - 1);
+            }
+        }
+        
+        if ((value = json_object_get(json, "maxPower"))) {
+            station->max_power = (float)json_get_number(value);
+        }
+        
+        if ((value = json_object_get(json, "currentPower"))) {
+            station->current_power = (float)json_get_number(value);
+        }
+        
+        if ((value = json_object_get(json, "chargerPower"))) {
+            station->charger_power = (float)json_get_number(value);
+        }
+        
+        if ((value = json_object_get(json, "masterAvailablePower"))) {
+            station->master_available_power = (float)json_get_number(value);
+        }
+        
+        if ((value = json_object_get(json, "voltagePhase1"))) {
+            station->voltage_phase1 = (float)json_get_number(value);
+        }
+        
+        if ((value = json_object_get(json, "voltagePhase2"))) {
+            station->voltage_phase2 = (float)json_get_number(value);
+        }
+        
+        if ((value = json_object_get(json, "voltagePhase3"))) {
+            station->voltage_phase3 = (float)json_get_number(value);
+        }
+        
+        if ((value = json_object_get(json, "currentPhase1"))) {
+            station->current_phase1 = (float)json_get_number(value);
+        }
+        
+        if ((value = json_object_get(json, "currentPhase2"))) {
+            station->current_phase2 = (float)json_get_number(value);
+        }
+        
+        if ((value = json_object_get(json, "currentPhase3"))) {
+            station->current_phase3 = (float)json_get_number(value);
+        }
+        
+        if ((value = json_object_get(json, "carConnection"))) {
+            station->car_connection = json_get_bool(value);
+        }
+        
+        if ((value = json_object_get(json, "carChargingPermission"))) {
+            station->car_charging_permission = json_get_bool(value);
+        }
+        
+        if ((value = json_object_get(json, "carError"))) {
+            station->car_error = json_get_bool(value);
+        }
+        
+        if ((value = json_object_get(json, "masterOnline"))) {
+            station->master_online = json_get_bool(value);
+        }
+        
+        if ((value = json_object_get(json, "masterChargingPermission"))) {
+            station->master_charging_permission = json_get_bool(value);
+        }
+        
+        if ((value = json_object_get(json, "singlePhaseConnection"))) {
+            station->single_phase_connection = json_get_bool(value);
+        }
+        
+        if ((value = json_object_get(json, "powerOverconsumption"))) {
+            station->power_overconsumption = json_get_bool(value);
+        }
+        
+        if ((value = json_object_get(json, "fixedPower"))) {
+            station->fixed_power = json_get_bool(value);
+        }
+    }
     
     return 0;
 }
 
 /**
- * Получение всех зарядных станций
+ * Инициализация глобальных данных станций
+ */
+static void initialize_global_stations(void) {
+    if (data_initialized) return;
+    
+    global_stations_capacity = 2;
+    global_stations = malloc(global_stations_capacity * sizeof(charging_station_t));
+    if (!global_stations) {
+        printf("Ошибка выделения памяти для станций\n");
+        return;
+    }
+    
+    global_stations_count = 2;
+    
+    // Первая станция
+    memset(&global_stations[0], 0, sizeof(charging_station_t));
+    global_stations[0].id = 1;
+    strcpy(global_stations[0].display_name, "Тестовая ESP32");
+    strcpy(global_stations[0].technical_name, "ESP32-001");
+    strcpy(global_stations[0].type, "slave");
+    strcpy(global_stations[0].status, "available");
+    global_stations[0].max_power = 22.0;
+    global_stations[0].current_power = 0.0;
+    
+    // Вторая станция
+    memset(&global_stations[1], 0, sizeof(charging_station_t));
+    global_stations[1].id = 2;
+    strcpy(global_stations[1].display_name, "Главная станция");
+    strcpy(global_stations[1].technical_name, "MASTER-001");
+    strcpy(global_stations[1].type, "master");
+    strcpy(global_stations[1].status, "online");
+    global_stations[1].max_power = 50.0;
+    global_stations[1].current_power = 15.5;
+    
+    data_initialized = 1;
+    printf("Инициализированы глобальные данные станций (%d станций)\n", global_stations_count);
+}
+
+/**
+ * Получение всех зарядных станций из глобальной памяти
  */
 int storage_get_stations(stations_array_t *stations) {
-    // Возвращаем тестовые данные
-    stations->stations = malloc(2 * sizeof(charging_station_t));
+    initialize_global_stations();
+    
+    // Выделяем память и копируем данные из глобального хранилища
+    stations->stations = malloc(global_stations_count * sizeof(charging_station_t));
     if (!stations->stations) {
         return -1;
     }
     
-    stations->count = 2;
-    stations->capacity = 2;
+    stations->count = global_stations_count;
+    stations->capacity = global_stations_count;
     
-    // Первая станция
-    memset(&stations->stations[0], 0, sizeof(charging_station_t));
-    stations->stations[0].id = 1;
-    strcpy(stations->stations[0].display_name, "Тестовая ESP32");
-    strcpy(stations->stations[0].technical_name, "ESP32-001");
-    strcpy(stations->stations[0].type, "slave");
-    strcpy(stations->stations[0].status, "available");
-    stations->stations[0].max_power = 22.0;
-    stations->stations[0].current_power = 0.0;
-    
-    // Вторая станция
-    memset(&stations->stations[1], 0, sizeof(charging_station_t));
-    stations->stations[1].id = 2;
-    strcpy(stations->stations[1].display_name, "Главная станция");
-    strcpy(stations->stations[1].technical_name, "MASTER-001");
-    strcpy(stations->stations[1].type, "master");
-    strcpy(stations->stations[1].status, "online");
-    stations->stations[1].max_power = 50.0;
-    stations->stations[1].current_power = 15.5;
+    // Копируем данные из глобального хранилища
+    for (int i = 0; i < global_stations_count; i++) {
+        memcpy(&stations->stations[i], &global_stations[i], sizeof(charging_station_t));
+    }
     
     return 0;
 }
 
 /**
- * Получение зарядной станции по ID
+ * Получение зарядной станции по ID из глобальной памяти
  */
 int storage_get_station(int id, charging_station_t *station) {
-    stations_array_t stations;
-    if (storage_get_stations(&stations) != 0) {
-        return -1;
-    }
+    initialize_global_stations();
     
-    for (int i = 0; i < stations.count; i++) {
-        if (stations.stations[i].id == id) {
-            memcpy(station, &stations.stations[i], sizeof(charging_station_t));
-            stations_array_free(&stations);
+    for (int i = 0; i < global_stations_count; i++) {
+        if (global_stations[i].id == id) {
+            memcpy(station, &global_stations[i], sizeof(charging_station_t));
             return 0;
         }
     }
     
-    stations_array_free(&stations);
     return -1;
 }
 
@@ -242,106 +378,90 @@ int storage_create_station(const charging_station_t *station, int *new_id) {
 }
 
 /**
- * Обновление зарядной станции
+ * Обновление зарядной станции в глобальной памяти
  */
 int storage_update_station(int id, const charging_station_t *updates) {
     printf("DEBUG: storage_update_station called for ID %d\n", id);
+    initialize_global_stations();
     
-    stations_array_t stations;
-    stations.stations = NULL;
-    stations.count = 0;
-    stations.capacity = 0;
-    
-    if (storage_get_stations(&stations) != 0) {
-        printf("DEBUG: Failed to load stations for update\n");
-        stations_array_free(&stations);
-        return -1;
-    }
-    
-    printf("DEBUG: Loaded %d stations for update\n", stations.count);
-    
-    // Находим станцию с указанным ID
-    for (int i = 0; i < stations.count; i++) {
-        if (stations.stations[i].id == id) {
+    // Ищем станцию с нужным ID в глобальном хранилище
+    for (int i = 0; i < global_stations_count; i++) {
+        if (global_stations[i].id == id) {
             printf("DEBUG: Found station with ID %d at index %d\n", id, i);
             printf("DEBUG: Old data: name='%s', maxPower=%.2f\n", 
-                   stations.stations[i].display_name, stations.stations[i].max_power);
+                   global_stations[i].display_name, global_stations[i].max_power);
             
-            // Обновляем данные станции
-            stations.stations[i] = *updates;
-            stations.stations[i].id = id; // Убеждаемся, что ID не потерялся
+            charging_station_t *current = &global_stations[i];
+            
+            // Селективно обновляем только переданные поля
+            if (strlen(updates->display_name) > 0) {
+                strncpy(current->display_name, updates->display_name, sizeof(current->display_name) - 1);
+                current->display_name[sizeof(current->display_name) - 1] = '\0';
+            }
+            if (strlen(updates->technical_name) > 0) {
+                strncpy(current->technical_name, updates->technical_name, sizeof(current->technical_name) - 1);
+                current->technical_name[sizeof(current->technical_name) - 1] = '\0';
+            }
+            if (strlen(updates->type) > 0) {
+                strncpy(current->type, updates->type, sizeof(current->type) - 1);
+                current->type[sizeof(current->type) - 1] = '\0';
+            }
+            if (strlen(updates->status) > 0) {
+                strncpy(current->status, updates->status, sizeof(current->status) - 1);
+                current->status[sizeof(current->status) - 1] = '\0';
+            }
+            if (strlen(updates->description) > 0) {
+                strncpy(current->description, updates->description, sizeof(current->description) - 1);
+                current->description[sizeof(current->description) - 1] = '\0';
+            }
+            if (strlen(updates->ip_address) > 0) {
+                strncpy(current->ip_address, updates->ip_address, sizeof(current->ip_address) - 1);
+                current->ip_address[sizeof(current->ip_address) - 1] = '\0';
+            }
+            
+            // Числовые поля обновляем только если они не равны 0
+            if (updates->max_power != 0.0f) {
+                current->max_power = updates->max_power;
+            }
+            if (updates->current_power != current->current_power) {
+                current->current_power = updates->current_power;
+            }
+            if (updates->charger_power != 0.0f) {
+                current->charger_power = updates->charger_power;
+            }
+            if (updates->master_available_power != 0.0f) {
+                current->master_available_power = updates->master_available_power;
+            }
+            
+            // Параметры напряжения и тока
+            if (updates->voltage_phase1 != 0.0f) {
+                current->voltage_phase1 = updates->voltage_phase1;
+            }
+            if (updates->voltage_phase2 != 0.0f) {
+                current->voltage_phase2 = updates->voltage_phase2;
+            }
+            if (updates->voltage_phase3 != 0.0f) {
+                current->voltage_phase3 = updates->voltage_phase3;
+            }
+            if (updates->current_phase1 != 0.0f) {
+                current->current_phase1 = updates->current_phase1;
+            }
+            if (updates->current_phase2 != 0.0f) {
+                current->current_phase2 = updates->current_phase2;
+            }
+            if (updates->current_phase3 != 0.0f) {
+                current->current_phase3 = updates->current_phase3;
+            }
             
             printf("DEBUG: New data: name='%s', maxPower=%.2f\n", 
-                   stations.stations[i].display_name, stations.stations[i].max_power);
+                   current->display_name, current->max_power);
             
-            // Сохраняем обратно в файл
-            json_value_t *json_array = json_create_array();
-            
-            for (int j = 0; j < stations.count; j++) {
-                json_value_t *station_obj = json_create_object();
-                charging_station_t *station = &stations.stations[j];
-                
-                json_object_set(station_obj, "id", json_create_number(station->id));
-                json_object_set(station_obj, "displayName", json_create_string(station->display_name));
-                json_object_set(station_obj, "technicalName", json_create_string(station->technical_name));
-                json_object_set(station_obj, "type", json_create_string(station->type));
-                json_object_set(station_obj, "status", json_create_string(station->status));
-                json_object_set(station_obj, "maxPower", json_create_number(station->max_power));
-                json_object_set(station_obj, "currentPower", json_create_number(station->current_power));
-                
-                if (strlen(station->ip_address) > 0) {
-                    json_object_set(station_obj, "ipAddress", json_create_string(station->ip_address));
-                }
-                if (strlen(station->description) > 0) {
-                    json_object_set(station_obj, "description", json_create_string(station->description));
-                }
-                
-                json_object_set(station_obj, "carConnection", json_create_bool(station->car_connection));
-                json_object_set(station_obj, "carChargingPermission", json_create_bool(station->car_charging_permission));
-                json_object_set(station_obj, "carError", json_create_bool(station->car_error));
-                json_object_set(station_obj, "masterOnline", json_create_bool(station->master_online));
-                json_object_set(station_obj, "masterChargingPermission", json_create_bool(station->master_charging_permission));
-                json_object_set(station_obj, "masterAvailablePower", json_create_number(station->master_available_power));
-                
-                json_object_set(station_obj, "voltagePhase1", json_create_number(station->voltage_phase1));
-                json_object_set(station_obj, "voltagePhase2", json_create_number(station->voltage_phase2));
-                json_object_set(station_obj, "voltagePhase3", json_create_number(station->voltage_phase3));
-                json_object_set(station_obj, "currentPhase1", json_create_number(station->current_phase1));
-                json_object_set(station_obj, "currentPhase2", json_create_number(station->current_phase2));
-                json_object_set(station_obj, "currentPhase3", json_create_number(station->current_phase3));
-                json_object_set(station_obj, "chargerPower", json_create_number(station->charger_power));
-                
-                json_object_set(station_obj, "singlePhaseConnection", json_create_bool(station->single_phase_connection));
-                json_object_set(station_obj, "powerOverconsumption", json_create_bool(station->power_overconsumption));
-                json_object_set(station_obj, "fixedPower", json_create_bool(station->fixed_power));
-                
-                json_array_add(json_array, station_obj);
-            }
-            
-            char *json_string = json_stringify(json_array);
-            
-            FILE *file = fopen(data_file_path, "w");
-            if (file) {
-                fputs(json_string, file);
-                fclose(file);
-                printf("Обновлена станция с ID %d и сохранена в файл\n", id);
-            } else {
-                printf("Ошибка при сохранении обновленной станции с ID %d\n", id);
-                free(json_string);
-                json_free(json_array);
-                stations_array_free(&stations);
-                return -1;
-            }
-            
-            free(json_string);
-            json_free(json_array);
-            stations_array_free(&stations);
+            printf("Обновлена станция с ID %d в памяти\n", id);
             return 0;
         }
     }
     
-    stations_array_free(&stations);
-    printf("Станция с ID %d не найдена для обновления\n", id);
+    printf("DEBUG: Station with ID %d not found\n", id);
     return -1;
 }
 
