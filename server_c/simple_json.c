@@ -235,14 +235,184 @@ const char* json_get_string(json_value_t *value) {
 }
 
 /**
- * Простой JSON парсер (упрощенная реализация)
+ * Пропуск пробелов в JSON строке
+ */
+static const char* skip_whitespace(const char *str) {
+    while (*str && (*str == ' ' || *str == '\t' || *str == '\n' || *str == '\r')) {
+        str++;
+    }
+    return str;
+}
+
+/**
+ * Парсинг строки из JSON
+ */
+static const char* parse_string(const char *str, char **result) {
+    if (*str != '"') return NULL;
+    str++; // пропускаем открывающую кавычку
+    
+    const char *start = str;
+    while (*str && *str != '"') {
+        if (*str == '\\') str++; // пропускаем экранированный символ
+        if (*str) str++;
+    }
+    
+    if (*str != '"') return NULL;
+    
+    int len = str - start;
+    *result = malloc(len + 1);
+    strncpy(*result, start, len);
+    (*result)[len] = '\0';
+    
+    return str + 1; // пропускаем закрывающую кавычку
+}
+
+/**
+ * Парсинг числа из JSON
+ */
+static const char* parse_number(const char *str, double *result) {
+    char *end;
+    *result = strtod(str, &end);
+    return (end > str) ? end : NULL;
+}
+
+/**
+ * Предварительное объявление для взаимной рекурсии
+ */
+static const char* parse_value(const char *str, json_value_t *value);
+
+/**
+ * Парсинг объекта из JSON
+ */
+static const char* parse_object(const char *str, json_value_t *value) {
+    if (*str != '{') return NULL;
+    str++;
+    
+    value->type = JSON_OBJECT;
+    value->data.object.count = 0;
+    value->data.object.capacity = 16;
+    value->data.object.keys = malloc(value->data.object.capacity * sizeof(char*));
+    value->data.object.values = malloc(value->data.object.capacity * sizeof(json_value_t));
+    
+    str = skip_whitespace(str);
+    
+    if (*str == '}') {
+        return str + 1; // пустой объект
+    }
+    
+    while (*str) {
+        str = skip_whitespace(str);
+        
+        // Парсим ключ
+        char *key;
+        str = parse_string(str, &key);
+        if (!str) break;
+        
+        str = skip_whitespace(str);
+        if (*str != ':') {
+            free(key);
+            break;
+        }
+        str++;
+        
+        str = skip_whitespace(str);
+        
+        // Парсим значение
+        json_value_t val;
+        str = parse_value(str, &val);
+        if (!str) {
+            free(key);
+            break;
+        }
+        
+        // Добавляем в объект
+        if (value->data.object.count >= value->data.object.capacity) {
+            value->data.object.capacity *= 2;
+            value->data.object.keys = realloc(value->data.object.keys, 
+                value->data.object.capacity * sizeof(char*));
+            value->data.object.values = realloc(value->data.object.values,
+                value->data.object.capacity * sizeof(json_value_t));
+        }
+        
+        value->data.object.keys[value->data.object.count] = key;
+        value->data.object.values[value->data.object.count] = val;
+        value->data.object.count++;
+        
+        str = skip_whitespace(str);
+        if (*str == '}') {
+            return str + 1;
+        } else if (*str == ',') {
+            str++;
+        } else {
+            break;
+        }
+    }
+    
+    return NULL;
+}
+
+/**
+ * Парсинг значения из JSON
+ */
+static const char* parse_value(const char *str, json_value_t *value) {
+    str = skip_whitespace(str);
+    
+    if (*str == '"') {
+        // Строка
+        char *string_val;
+        str = parse_string(str, &string_val);
+        if (str) {
+            value->type = JSON_STRING;
+            value->data.string_val = string_val;
+        }
+        return str;
+    } else if (*str == '{') {
+        // Объект
+        return parse_object(str, value);
+    } else if (*str == 't' && strncmp(str, "true", 4) == 0) {
+        // true
+        value->type = JSON_BOOL;
+        value->data.bool_val = 1;
+        return str + 4;
+    } else if (*str == 'f' && strncmp(str, "false", 5) == 0) {
+        // false
+        value->type = JSON_BOOL;
+        value->data.bool_val = 0;
+        return str + 5;
+    } else if (*str == 'n' && strncmp(str, "null", 4) == 0) {
+        // null
+        value->type = JSON_NULL;
+        return str + 4;
+    } else if (*str == '-' || (*str >= '0' && *str <= '9')) {
+        // Число
+        double number_val;
+        str = parse_number(str, &number_val);
+        if (str) {
+            value->type = JSON_NUMBER;
+            value->data.number_val = number_val;
+        }
+        return str;
+    }
+    
+    return NULL;
+}
+
+/**
+ * Простой JSON парсер
  */
 json_value_t* json_parse(const char *json_string) {
-    // Упрощенная реализация - возвращает пустой объект
-    // В полной реализации здесь был бы полноценный парсер
     if (!json_string) return NULL;
     
-    return json_create_object();
+    json_value_t *result = malloc(sizeof(json_value_t));
+    if (!result) return NULL;
+    
+    const char *end = parse_value(json_string, result);
+    if (!end) {
+        free(result);
+        return NULL;
+    }
+    
+    return result;
 }
 
 /**

@@ -42,6 +42,7 @@ typedef struct json_value {
             char **keys;
             struct json_value *values;
             int count;
+            int capacity;
         } object;
     } data;
 } json_value_t;

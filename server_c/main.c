@@ -270,7 +270,7 @@ void handle_request(const http_request_t *request, http_response_t *response) {
             }
             
             // Парсим JSON из тела запроса
-            printf("DEBUG: PATCH body length: %d, content: '%s'\n", (int)strlen(request->body), request->body);
+
             
             if (strlen(request->body) == 0) {
                 http_set_response_status(response, 400, "Bad Request");
@@ -322,16 +322,30 @@ void handle_request(const http_request_t *request, http_response_t *response) {
                 }
             }
             
+            // Проверяем все возможные поля для обновления
+            
             if ((field_value = json_object_get(json_data, "maxPower"))) {
-                printf("DEBUG: Found maxPower field in JSON\n");
-                double raw_number = json_get_number(field_value);
-                float new_power = (float)raw_number;
-                printf("DEBUG: Raw number from JSON: %f, converted to float: %.2f\n", raw_number, new_power);
-                printf("DEBUG: Updating maxPower from %.2f to %.2f\n", updated_station.max_power, new_power);
-                updated_station.max_power = new_power;
-                printf("DEBUG: maxPower updated successfully to %.2f\n", updated_station.max_power);
-            } else {
-                printf("DEBUG: maxPower field NOT found in JSON\n");
+                updated_station.max_power = (float)json_get_number(field_value);
+            }
+            
+            if ((field_value = json_object_get(json_data, "chargerPower"))) {
+                updated_station.charger_power = (float)json_get_number(field_value);
+            }
+            
+            if ((field_value = json_object_get(json_data, "carError"))) {
+                updated_station.car_error = json_get_bool(field_value);
+            }
+            
+            if ((field_value = json_object_get(json_data, "carConnection"))) {
+                updated_station.car_connection = json_get_bool(field_value);
+            }
+            
+            if ((field_value = json_object_get(json_data, "currentPower"))) {
+                updated_station.current_power = (float)json_get_number(field_value);
+            }
+            
+            if ((field_value = json_object_get(json_data, "carChargingPermission"))) {
+                updated_station.car_charging_permission = json_get_bool(field_value);
             }
             
             if ((field_value = json_object_get(json_data, "currentPower"))) {
