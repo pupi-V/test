@@ -1,24 +1,12 @@
-/*
- * ESP32 Система управления зарядными станциями для электромобилей
- * Версия для модулей с 16MB Flash памятью
- * 
- * Поддерживаемые функции:
- * - Полнофункциональный веб-интерфейс на React
- * - WebSocket для real-time обновлений
- * - Управление до 50 зарядными станциями
- * - OTA обновления
- * - LittleFS файловая система
- */
 
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
 #include <AsyncTCP.h>
-#include <LittleFS.h>
+#include <SPIFFS.h>
 #include <ArduinoJson.h>
-#include <AsyncWebSocket.h>
 #include <ESPmDNS.h>
 
-// Настройки WiFi сети
+// Настройки WiFi точки доступа
 const char* ssid = "ESP32_ChargingStations";
 const char* password = "12345678";
 
@@ -26,7 +14,7 @@ const char* password = "12345678";
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
 
-// Структура данных зарядной станции
+// Структура зарядной станции
 struct ChargingStation {
   int id;
   String displayName;
@@ -58,16 +46,404 @@ int stationCount = 0;
 unsigned long lastUpdate = 0;
 const unsigned long updateInterval = 5000; // 5 секунд
 
+// Функции работы с JSON
+void stationToJson(const ChargingStation& station, JsonObject& json) {
+  json["id"] = station.id;
+  json["displayName"] = station.displayName;
+  json["technicalName"] = station.technicalName;
+  json["type"] = station.type;
+  json["status"] = station.status;
+  json["maxPower"] = station.maxPower;
+  json["currentPower"] = station.currentPower;
+  json["availablePower"] = station.availablePower;
+  json["carConnected"] = station.carConnected;
+  json["chargingAllowed"] = station.chargingAllowed;
+  json["hasError"] = station.hasError;
+  json["errorMessage"] = station.errorMessage;
+  json["masterId"] = station.masterId;
+  json["voltageL1"] = station.voltageL1;
+  json["voltageL2"] = station.voltageL2;
+  json["voltageL3"] = station.voltageL3;
+  json["currentL1"] = station.currentL1;
+  json["currentL2"] = station.currentL2;
+  json["currentL3"] = station.currentL3;
+  json["lastUpdate"] = station.lastUpdate;
+}
+
+void jsonToStation(const JsonObject& json, ChargingStation& station) {
+  if (json["displayName"]) station.displayName = json["displayName"].as<String>();
+  if (json["technicalName"]) station.technicalName = json["technicalName"].as<String>();
+  if (json["type"]) station.type = json["type"].as<String>();
+  if (json["status"]) station.status = json["status"].as<String>();
+  if (json["maxPower"]) station.maxPower = json["maxPower"];
+  if (json["currentPower"]) station.currentPower = json["currentPower"];
+  if (json["availablePower"]) station.availablePower = json["availablePower"];
+  if (json["carConnected"]) station.carConnected = json["carConnected"];
+  if (json["chargingAllowed"]) station.chargingAllowed = json["chargingAllowed"];
+  if (json["hasError"]) station.hasError = json["hasError"];
+  if (json["errorMessage"]) station.errorMessage = json["errorMessage"].as<String>();
+  if (json["masterId"]) station.masterId = json["masterId"];
+  if (json["voltageL1"]) station.voltageL1 = json["voltageL1"];
+  if (json["voltageL2"]) station.voltageL2 = json["voltageL2"];
+  if (json["voltageL3"]) station.voltageL3 = json["voltageL3"];
+  if (json["currentL1"]) station.currentL1 = json["currentL1"];
+  if (json["currentL2"]) station.currentL2 = json["currentL2"];
+  if (json["currentL3"]) station.currentL3 = json["currentL3"];
+}
+
+void updateStationFromJson(ChargingStation& station, const JsonObject& json) {
+  jsonToStation(json, station);
+  station.lastUpdate = getCurrentTime();
+}
+
+// Вспомогательные функции
+String getCurrentTime() {
+  return String(millis());
+}
+
+int findStationIndex(int id) {
+  for (int i = 0; i < stationCount; i++) {
+    if (stations[i].id == id) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+int getNextStationId() {
+  int maxId = 0;
+  for (int i = 0; i < stationCount; i++) {
+    if (stations[i].id > maxId) {
+      maxId = stations[i].id;
+    }
+  }
+  return maxId + 1;
+}
+
+void saveStationsToFile() {
+  File file = SPIFFS.open("/stations.json", "w");
+  if (!file) {
+    Serial.println("Ошибка создания файла stations.json");
+    return;
+  }
+  
+  JsonDocument doc;
+  JsonArray array = doc.to<JsonArray>();
+  
+  for (int i = 0; i < stationCount; i++) {
+    JsonObject station = array.add<JsonObject>();
+    stationToJson(stations[i], station);
+  }
+  
+  serializeJson(doc, file);
+  file.close();
+  Serial.println("Данные станций сохранены в файл");
+}
+
+void loadStationsFromFile() {
+  if (!SPIFFS.exists("/stations.json")) {
+    Serial.println("Файл stations.json не найден, создаем тестовые данные");
+    createTestStations();
+    return;
+  }
+  
+  File file = SPIFFS.open("/stations.json", "r");
+  if (!file) {
+    Serial.println("Ошибка открытия файла stations.json");
+    return;
+  }
+  
+  JsonDocument doc;
+  DeserializationError error = deserializeJson(doc, file);
+  file.close();
+  
+  if (error) {
+    Serial.println("Ошибка парсинга JSON файла");
+    return;
+  }
+  
+  JsonArray array = doc.as<JsonArray>();
+  stationCount = 0;
+  
+  for (JsonVariant v : array) {
+    if (stationCount >= 50) break;
+    JsonObject obj = v.as<JsonObject>();
+    stations[stationCount].id = obj["id"];
+    jsonToStation(obj, stations[stationCount]);
+    stationCount++;
+  }
+  
+  Serial.printf("Загружено %d станций из файла\n", stationCount);
+}
+
+void createTestStations() {
+  stationCount = 2;
+  
+  // Станция 1
+  stations[0].id = 1;
+  stations[0].displayName = "Станция A1";
+  stations[0].technicalName = "ST_A1_001";
+  stations[0].type = "master";
+  stations[0].status = "available";
+  stations[0].maxPower = 22.0;
+  stations[0].currentPower = 0.0;
+  stations[0].availablePower = 22.0;
+  stations[0].carConnected = false;
+  stations[0].chargingAllowed = true;
+  stations[0].hasError = false;
+  stations[0].errorMessage = "";
+  stations[0].masterId = 0;
+  stations[0].voltageL1 = 230.0;
+  stations[0].voltageL2 = 230.0;
+  stations[0].voltageL3 = 230.0;
+  stations[0].currentL1 = 0.0;
+  stations[0].currentL2 = 0.0;
+  stations[0].currentL3 = 0.0;
+  stations[0].lastUpdate = getCurrentTime();
+  
+  // Станция 2
+  stations[1].id = 2;
+  stations[1].displayName = "Станция B2";
+  stations[1].technicalName = "ST_B2_002";
+  stations[1].type = "slave";
+  stations[1].status = "charging";
+  stations[1].maxPower = 11.0;
+  stations[1].currentPower = 7.5;
+  stations[1].availablePower = 3.5;
+  stations[1].carConnected = true;
+  stations[1].chargingAllowed = true;
+  stations[1].hasError = false;
+  stations[1].errorMessage = "";
+  stations[1].masterId = 1;
+  stations[1].voltageL1 = 230.0;
+  stations[1].voltageL2 = 230.0;
+  stations[1].voltageL3 = 230.0;
+  stations[1].currentL1 = 10.9;
+  stations[1].currentL2 = 10.9;
+  stations[1].currentL3 = 10.9;
+  stations[1].lastUpdate = getCurrentTime();
+  
+  saveStationsToFile();
+  Serial.println("Созданы тестовые станции");
+}
+
+void updateStationsData() {
+  // Симуляция обновления данных
+  for (int i = 0; i < stationCount; i++) {
+    if (stations[i].status == "charging") {
+      // Небольшие изменения тока
+      stations[i].currentL1 += random(-50, 50) / 100.0;
+      stations[i].currentL2 += random(-50, 50) / 100.0;
+      stations[i].currentL3 += random(-50, 50) / 100.0;
+      
+      // Ограничиваем значения
+      stations[i].currentL1 = max(0.0f, min(16.0f, stations[i].currentL1));
+      stations[i].currentL2 = max(0.0f, min(16.0f, stations[i].currentL2));
+      stations[i].currentL3 = max(0.0f, min(16.0f, stations[i].currentL3));
+    }
+    stations[i].lastUpdate = getCurrentTime();
+  }
+}
+
+void broadcastStationsUpdate() {
+  JsonDocument doc;
+  doc["type"] = "stations_update";
+  JsonArray array = doc["data"].to<JsonArray>();
+  
+  for (int i = 0; i < stationCount; i++) {
+    JsonObject station = array.add<JsonObject>();
+    stationToJson(stations[i], station);
+  }
+  
+  String message;
+  serializeJson(doc, message);
+  ws.textAll(message);
+}
+
+void sendStationsToClient(AsyncWebSocketClient* client) {
+  JsonDocument doc;
+  doc["type"] = "stations_data";
+  JsonArray array = doc["data"].to<JsonArray>();
+  
+  for (int i = 0; i < stationCount; i++) {
+    JsonObject station = array.add<JsonObject>();
+    stationToJson(stations[i], station);
+  }
+  
+  String message;
+  serializeJson(doc, message);
+  client->text(message);
+}
+
+void handleWebSocketMessage(AsyncWebSocketClient* client, uint8_t* data, size_t len) {
+  JsonDocument doc;
+  DeserializationError error = deserializeJson(doc, data, len);
+  
+  if (error) return;
+  
+  String action = doc["action"];
+  if (action == "update_station") {
+    int stationId = doc["stationId"];
+    int stationIndex = findStationIndex(stationId);
+    if (stationIndex >= 0) {
+      updateStationFromJson(stations[stationIndex], doc["data"]);
+      saveStationsToFile();
+      broadcastStationsUpdate();
+    }
+  }
+}
+
+void onWebSocketEvent(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEventType type, void* arg, uint8_t* data, size_t len) {
+  switch (type) {
+    case WS_EVT_CONNECT:
+      Serial.printf("WebSocket клиент #%u подключен с IP %s\n", client->id(), client->remoteIP().toString().c_str());
+      sendStationsToClient(client);
+      break;
+      
+    case WS_EVT_DISCONNECT:
+      Serial.printf("WebSocket клиент #%u отключен\n", client->id());
+      break;
+      
+    case WS_EVT_DATA:
+      handleWebSocketMessage(client, data, len);
+      break;
+      
+    case WS_EVT_PONG:
+    case WS_EVT_ERROR:
+      break;
+  }
+}
+
+void setupAPIRoutes() {
+  // GET /api/stations
+  server.on("/api/stations", HTTP_GET, [](AsyncWebServerRequest* request) {
+    JsonDocument doc;
+    JsonArray array = doc.to<JsonArray>();
+    
+    for (int i = 0; i < stationCount; i++) {
+      JsonObject station = array.add<JsonObject>();
+      stationToJson(stations[i], station);
+    }
+    
+    String response;
+    serializeJson(doc, response);
+    request->send(200, "application/json", response);
+  });
+  
+  // POST /api/stations
+  server.on("/api/stations", HTTP_POST, [](AsyncWebServerRequest* request) {}, NULL,
+    [](AsyncWebServerRequest* request, uint8_t* data, size_t len, size_t index, size_t total) {
+      if (stationCount >= 50) {
+        request->send(400, "application/json", "{\"error\":\"Максимальное количество станций достигнуто\"}");
+        return;
+      }
+      
+      JsonDocument doc;
+      DeserializationError error = deserializeJson(doc, data, len);
+      
+      if (error) {
+        request->send(400, "application/json", "{\"error\":\"Неверный JSON\"}");
+        return;
+      }
+      
+      ChargingStation newStation;
+      jsonToStation(doc, newStation);
+      newStation.id = getNextStationId();
+      stations[stationCount] = newStation;
+      stationCount++;
+      
+      saveStationsToFile();
+      
+      JsonDocument responseDoc;
+      stationToJson(newStation, responseDoc);
+      
+      String response;
+      serializeJson(responseDoc, response);
+      request->send(201, "application/json", response);
+    });
+  
+  // PATCH /api/stations/:id
+  server.on("^\\/api\\/stations\\/([0-9]+)$", HTTP_PATCH, [](AsyncWebServerRequest* request) {}, NULL,
+    [](AsyncWebServerRequest* request, uint8_t* data, size_t len, size_t index, size_t total) {
+      String idStr = request->pathArg(0);
+      int stationId = idStr.toInt();
+      int stationIndex = findStationIndex(stationId);
+      
+      if (stationIndex < 0) {
+        request->send(404, "application/json", "{\"error\":\"Станция не найдена\"}");
+        return;
+      }
+      
+      JsonDocument doc;
+      DeserializationError error = deserializeJson(doc, data, len);
+      
+      if (error) {
+        request->send(400, "application/json", "{\"error\":\"Неверный JSON\"}");
+        return;
+      }
+      
+      updateStationFromJson(stations[stationIndex], doc);
+      saveStationsToFile();
+      
+      JsonDocument responseDoc;
+      stationToJson(stations[stationIndex], responseDoc);
+      
+      String response;
+      serializeJson(responseDoc, response);
+      request->send(200, "application/json", response);
+    });
+  
+  // DELETE /api/stations/:id
+  server.on("^\\/api\\/stations\\/([0-9]+)$", HTTP_DELETE, [](AsyncWebServerRequest* request) {
+    String idStr = request->pathArg(0);
+    int stationId = idStr.toInt();
+    int stationIndex = findStationIndex(stationId);
+    
+    if (stationIndex < 0) {
+      request->send(404, "application/json", "{\"error\":\"Станция не найдена\"}");
+      return;
+    }
+    
+    // Сдвигаем все элементы влево
+    for (int i = stationIndex; i < stationCount - 1; i++) {
+      stations[i] = stations[i + 1];
+    }
+    stationCount--;
+    
+    saveStationsToFile();
+    request->send(200, "application/json", "{\"message\":\"Станция удалена\"}");
+  });
+  
+  // POST /api/esp32/scan
+  server.on("/api/esp32/scan", HTTP_POST, [](AsyncWebServerRequest* request) {
+    JsonDocument doc;
+    JsonArray array = doc.to<JsonArray>();
+    
+    // Добавляем текущую плату в результат
+    JsonObject board = array.add<JsonObject>();
+    board["id"] = "esp32_local";
+    board["type"] = "ESP32";
+    board["ip"] = WiFi.softAPIP().toString();
+    board["name"] = "Локальная ESP32";
+    board["status"] = "online";
+    board["lastSeen"] = getCurrentTime();
+    
+    String response;
+    serializeJson(doc, response);
+    request->send(200, "application/json", response);
+  });
+}
+
 void setup() {
   Serial.begin(115200);
   Serial.println("\n=== ESP32 Charging Station Management System ===");
   
   // Инициализация файловой системы
-  if (!LittleFS.begin(true)) {
-    Serial.println("ОШИБКА: Не удалось инициализировать LittleFS");
+  if (!SPIFFS.begin(true)) {
+    Serial.println("ОШИБКА: Не удалось инициализировать SPIFFS");
     return;
   }
-  Serial.println("✓ LittleFS инициализирована");
+  Serial.println("✓ SPIFFS инициализирована");
   
   // Загрузка данных станций из файла
   loadStationsFromFile();
@@ -93,408 +469,35 @@ void setup() {
   setupAPIRoutes();
   
   // Статические файлы веб-интерфейса
-  server.serveStatic("/", LittleFS, "/www/").setDefaultFile("index.html");
+  server.serveStatic("/", SPIFFS, "/www/").setDefaultFile("index.html");
   
-  // Обслуживание отдельных файлов с правильными MIME типами
+  // Главная страница
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(LittleFS, "/www/index.html", "text/html");
-  });
-  
-  // Обработка 404 ошибок
-  server.onNotFound([](AsyncWebServerRequest *request) {
-    request->send(404, "text/plain", "Страница не найдена");
+    request->send(SPIFFS, "/www/index.html", "text/html");
   });
   
   // Запуск веб-сервера
   server.begin();
   Serial.println("✓ Веб-сервер запущен на порту 80");
   
-  // Создание тестовых данных станций
-  createTestStations();
+  // Создание тестовых станций если файл не найден
+  if (stationCount == 0) {
+    createTestStations();
+  }
   
   Serial.println("=== Система готова к работе ===");
 }
 
 void loop() {
-  // Обновление данных станций каждые 5 секунд
+  // Обновление данных каждые 5 секунд
   if (millis() - lastUpdate > updateInterval) {
     updateStationsData();
     broadcastStationsUpdate();
     lastUpdate = millis();
   }
   
-  // Очистка WebSocket соединений
+  // Обработка WebSocket соединений
   ws.cleanupClients();
   
-  delay(10);
-}
-
-// Настройка API маршрутов
-void setupAPIRoutes() {
-  // GET /api/stations - получить все станции
-  server.on("/api/stations", HTTP_GET, [](AsyncWebServerRequest *request) {
-    AsyncResponseStream *response = request->beginResponseStream("application/json");
-    DynamicJsonDocument doc(8192);
-    JsonArray array = doc.to<JsonArray>();
-    
-    for (int i = 0; i < stationCount; i++) {
-      JsonObject station = array.createNestedObject();
-      stationToJson(stations[i], station);
-    }
-    
-    serializeJson(doc, *response);
-    request->send(response);
-  });
-  
-  // POST /api/stations - создать новую станцию
-  server.on("/api/stations", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL,
-    [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) {
-      DynamicJsonDocument doc(1024);
-      deserializeJson(doc, (char*)data);
-      
-      if (stationCount < 50) {
-        ChargingStation newStation;
-        jsonToStation(doc, newStation);
-        newStation.id = getNextStationId();
-        stations[stationCount++] = newStation;
-        
-        saveStationsToFile();
-        
-        AsyncResponseStream *response = request->beginResponseStream("application/json");
-        DynamicJsonDocument responseDoc(1024);
-        stationToJson(newStation, responseDoc);
-        serializeJson(responseDoc, *response);
-        request->send(response);
-      } else {
-        request->send(400, "application/json", "{\"error\":\"Максимум 50 станций\"}");
-      }
-    });
-  
-  // PATCH /api/stations/:id - обновить станцию
-  server.on("/api/stations", HTTP_PATCH, [](AsyncWebServerRequest *request) {}, NULL,
-    [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) {
-      String path = request->url();
-      int stationId = path.substring(path.lastIndexOf('/') + 1).toInt();
-      
-      int stationIndex = findStationIndex(stationId);
-      if (stationIndex == -1) {
-        request->send(404, "application/json", "{\"error\":\"Станция не найдена\"}");
-        return;
-      }
-      
-      DynamicJsonDocument doc(1024);
-      deserializeJson(doc, (char*)data);
-      
-      updateStationFromJson(stations[stationIndex], doc);
-      saveStationsToFile();
-      
-      AsyncResponseStream *response = request->beginResponseStream("application/json");
-      DynamicJsonDocument responseDoc(1024);
-      stationToJson(stations[stationIndex], responseDoc);
-      serializeJson(responseDoc, *response);
-      request->send(response);
-    });
-  
-  // DELETE /api/stations/:id - удалить станцию
-  server.on("/api/stations", HTTP_DELETE, [](AsyncWebServerRequest *request) {
-    String path = request->url();
-    int stationId = path.substring(path.lastIndexOf('/') + 1).toInt();
-    
-    int stationIndex = findStationIndex(stationId);
-    if (stationIndex == -1) {
-      request->send(404, "application/json", "{\"error\":\"Станция не найдена\"}");
-      return;
-    }
-    
-    // Сдвигаем массив
-    for (int i = stationIndex; i < stationCount - 1; i++) {
-      stations[i] = stations[i + 1];
-    }
-    stationCount--;
-    
-    saveStationsToFile();
-    request->send(200, "application/json", "{\"success\":true}");
-  });
-  
-  // GET /api/esp32/scan - сканирование ESP32 устройств
-  server.on("/api/esp32/scan", HTTP_GET, [](AsyncWebServerRequest *request) {
-    AsyncResponseStream *response = request->beginResponseStream("application/json");
-    DynamicJsonDocument doc(1024);
-    JsonArray array = doc.to<JsonArray>();
-    
-    JsonObject board = array.createNestedObject();
-    board["id"] = "esp32-master";
-    board["type"] = "master";
-    board["ip"] = WiFi.softAPIP().toString();
-    board["name"] = "ESP32 Master Station";
-    board["status"] = "online";
-    board["lastSeen"] = "сейчас";
-    
-    serializeJson(doc, *response);
-    request->send(response);
-  });
-}
-
-// Обработка WebSocket событий
-void onWebSocketEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, 
-                     AwsEventType type, void *arg, uint8_t *data, size_t len) {
-  switch (type) {
-    case WS_EVT_CONNECT:
-      Serial.printf("WebSocket клиент #%u подключен с IP %s\n", 
-                    client->id(), client->remoteIP().toString().c_str());
-      // Отправляем текущие данные новому клиенту
-      sendStationsToClient(client);
-      break;
-      
-    case WS_EVT_DISCONNECT:
-      Serial.printf("WebSocket клиент #%u отключен\n", client->id());
-      break;
-      
-    case WS_EVT_ERROR:
-      Serial.printf("WebSocket ошибка клиента #%u: %s\n", client->id(), (char*)data);
-      break;
-      
-    case WS_EVT_DATA:
-      // Обработка входящих данных от клиента
-      handleWebSocketMessage(client, data, len);
-      break;
-  }
-}
-
-// Обработка WebSocket сообщений
-void handleWebSocketMessage(AsyncWebSocketClient *client, uint8_t *data, size_t len) {
-  DynamicJsonDocument doc(1024);
-  deserializeJson(doc, (char*)data);
-  
-  String action = doc["action"];
-  
-  if (action == "updateStation") {
-    int stationId = doc["stationId"];
-    int stationIndex = findStationIndex(stationId);
-    
-    if (stationIndex != -1) {
-      updateStationFromJson(stations[stationIndex], doc["data"]);
-      saveStationsToFile();
-      broadcastStationsUpdate();
-    }
-  }
-}
-
-// Отправка данных станций всем WebSocket клиентам
-void broadcastStationsUpdate() {
-  DynamicJsonDocument doc(8192);
-  doc["type"] = "stationsUpdate";
-  JsonArray array = doc.createNestedArray("data");
-  
-  for (int i = 0; i < stationCount; i++) {
-    JsonObject station = array.createNestedObject();
-    stationToJson(stations[i], station);
-  }
-  
-  String message;
-  serializeJson(doc, message);
-  ws.textAll(message);
-}
-
-// Отправка данных станций конкретному клиенту
-void sendStationsToClient(AsyncWebSocketClient *client) {
-  DynamicJsonDocument doc(8192);
-  doc["type"] = "stationsUpdate";
-  JsonArray array = doc.createNestedArray("data");
-  
-  for (int i = 0; i < stationCount; i++) {
-    JsonObject station = array.createNestedObject();
-    stationToJson(stations[i], station);
-  }
-  
-  String message;
-  serializeJson(doc, message);
-  client->text(message);
-}
-
-// Преобразование структуры станции в JSON
-void stationToJson(const ChargingStation& station, JsonObject& json) {
-  json["id"] = station.id;
-  json["displayName"] = station.displayName;
-  json["technicalName"] = station.technicalName;
-  json["type"] = station.type;
-  json["status"] = station.status;
-  json["maxPower"] = station.maxPower;
-  json["currentPower"] = station.currentPower;
-  json["availablePower"] = station.availablePower;
-  json["carConnected"] = station.carConnected;
-  json["chargingAllowed"] = station.chargingAllowed;
-  json["hasError"] = station.hasError;
-  json["errorMessage"] = station.errorMessage;
-  json["masterId"] = station.masterId;
-  json["voltageL1"] = station.voltageL1;
-  json["voltageL2"] = station.voltageL2;
-  json["voltageL3"] = station.voltageL3;
-  json["currentL1"] = station.currentL1;
-  json["currentL2"] = station.currentL2;
-  json["currentL3"] = station.currentL3;
-  json["lastUpdate"] = station.lastUpdate;
-}
-
-// Преобразование JSON в структуру станции
-void jsonToStation(const JsonObject& json, ChargingStation& station) {
-  if (json.containsKey("displayName")) station.displayName = json["displayName"].as<String>();
-  if (json.containsKey("technicalName")) station.technicalName = json["technicalName"].as<String>();
-  if (json.containsKey("type")) station.type = json["type"].as<String>();
-  if (json.containsKey("status")) station.status = json["status"].as<String>();
-  if (json.containsKey("maxPower")) station.maxPower = json["maxPower"];
-  if (json.containsKey("currentPower")) station.currentPower = json["currentPower"];
-  if (json.containsKey("availablePower")) station.availablePower = json["availablePower"];
-  if (json.containsKey("carConnected")) station.carConnected = json["carConnected"];
-  if (json.containsKey("chargingAllowed")) station.chargingAllowed = json["chargingAllowed"];
-  if (json.containsKey("hasError")) station.hasError = json["hasError"];
-  if (json.containsKey("errorMessage")) station.errorMessage = json["errorMessage"].as<String>();
-  if (json.containsKey("masterId")) station.masterId = json["masterId"];
-  if (json.containsKey("voltageL1")) station.voltageL1 = json["voltageL1"];
-  if (json.containsKey("voltageL2")) station.voltageL2 = json["voltageL2"];
-  if (json.containsKey("voltageL3")) station.voltageL3 = json["voltageL3"];
-  if (json.containsKey("currentL1")) station.currentL1 = json["currentL1"];
-  if (json.containsKey("currentL2")) station.currentL2 = json["currentL2"];
-  if (json.containsKey("currentL3")) station.currentL3 = json["currentL3"];
-}
-
-// Обновление станции из JSON (частичное обновление)
-void updateStationFromJson(ChargingStation& station, const JsonObject& json) {
-  jsonToStation(json, station);
-  station.lastUpdate = getCurrentTime();
-}
-
-// Поиск индекса станции по ID
-int findStationIndex(int id) {
-  for (int i = 0; i < stationCount; i++) {
-    if (stations[i].id == id) return i;
-  }
-  return -1;
-}
-
-// Получение следующего ID для новой станции
-int getNextStationId() {
-  int maxId = 0;
-  for (int i = 0; i < stationCount; i++) {
-    if (stations[i].id > maxId) maxId = stations[i].id;
-  }
-  return maxId + 1;
-}
-
-// Получение текущего времени в виде строки
-String getCurrentTime() {
-  return String(millis() / 1000) + "s";
-}
-
-// Создание тестовых станций
-void createTestStations() {
-  if (stationCount == 0) {
-    // Станция 1 - Master
-    stations[0] = {
-      1, "Главная станция", "MASTER_01", "master", "available",
-      50.0, 0.0, 50.0, false, true, false, "",
-      0, 230.5, 231.2, 229.8, 0.0, 0.0, 0.0, getCurrentTime()
-    };
-    
-    // Станция 2 - Slave в работе
-    stations[1] = {
-      2, "Станция №2", "SLAVE_02", "slave", "charging",
-      22.0, 18.5, 3.5, true, true, false, "",
-      1, 229.1, 230.8, 231.5, 25.2, 24.8, 26.1, getCurrentTime()
-    };
-    
-    // Станция 3 - Slave с ошибкой
-    stations[2] = {
-      3, "Станция №3", "SLAVE_03", "slave", "error",
-      22.0, 0.0, 0.0, false, false, true, "Ошибка связи с контроллером",
-      1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, getCurrentTime()
-    };
-    
-    stationCount = 3;
-    saveStationsToFile();
-    Serial.println("✓ Созданы тестовые станции");
-  }
-}
-
-// Обновление данных станций (симуляция реальных данных)
-void updateStationsData() {
-  for (int i = 0; i < stationCount; i++) {
-    ChargingStation& station = stations[i];
-    
-    // Симуляция изменения данных
-    if (station.status == "charging") {
-      // Небольшие колебания тока и мощности
-      station.currentPower += (random(-200, 200) / 100.0);
-      if (station.currentPower < 0) station.currentPower = 0;
-      if (station.currentPower > station.maxPower) station.currentPower = station.maxPower;
-      
-      station.availablePower = station.maxPower - station.currentPower;
-      
-      // Обновление токов по фазам
-      float baseCurrent = station.currentPower / (3 * 230) * 1000; // мА
-      station.currentL1 = baseCurrent + random(-500, 500) / 100.0;
-      station.currentL2 = baseCurrent + random(-500, 500) / 100.0;
-      station.currentL3 = baseCurrent + random(-500, 500) / 100.0;
-    }
-    
-    // Обновление напряжений (небольшие колебания)
-    if (!station.hasError) {
-      station.voltageL1 = 230.0 + random(-20, 20) / 10.0;
-      station.voltageL2 = 230.0 + random(-20, 20) / 10.0;
-      station.voltageL3 = 230.0 + random(-20, 20) / 10.0;
-    }
-    
-    station.lastUpdate = getCurrentTime();
-  }
-}
-
-// Сохранение данных станций в файл
-void saveStationsToFile() {
-  File file = LittleFS.open("/stations.json", "w");
-  if (!file) {
-    Serial.println("ОШИБКА: Не удалось открыть файл для записи");
-    return;
-  }
-  
-  DynamicJsonDocument doc(8192);
-  JsonArray array = doc.to<JsonArray>();
-  
-  for (int i = 0; i < stationCount; i++) {
-    JsonObject station = array.createNestedObject();
-    stationToJson(stations[i], station);
-  }
-  
-  serializeJson(doc, file);
-  file.close();
-}
-
-// Загрузка данных станций из файла
-void loadStationsFromFile() {
-  if (!LittleFS.exists("/stations.json")) {
-    Serial.println("Файл stations.json не найден, будут созданы тестовые данные");
-    return;
-  }
-  
-  File file = LittleFS.open("/stations.json", "r");
-  if (!file) {
-    Serial.println("ОШИБКА: Не удалось открыть файл для чтения");
-    return;
-  }
-  
-  DynamicJsonDocument doc(8192);
-  deserializeJson(doc, file);
-  file.close();
-  
-  JsonArray array = doc.as<JsonArray>();
-  stationCount = 0;
-  
-  for (JsonObject stationObj : array) {
-    if (stationCount < 50) {
-      stations[stationCount].id = stationObj["id"];
-      jsonToStation(stationObj, stations[stationCount]);
-      stationCount++;
-    }
-  }
-  
-  Serial.printf("✓ Загружено %d станций из файла\n", stationCount);
+  delay(100);
 }
