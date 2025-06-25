@@ -80,4 +80,8 @@ void stations_array_free(stations_array_t *stations);
 int validate_station_data(const charging_station_t *station);
 int validate_update_data(const charging_station_t *updates);
 
+// Функции для работы с глобальными данными
+void initialize_global_stations(void);
+int save_global_stations_to_file(void);
+
 #endif // STORAGE_H
