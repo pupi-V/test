@@ -246,6 +246,172 @@ void handle_request(const http_request_t *request, http_response_t *response) {
             return;
         }
         
+        // PATCH /api/stations/:id
+        if (strncmp(request->path, "/api/stations/", 14) == 0 && strcmp(request->method, "PATCH") == 0) {
+            const char *id_str = request->path + 14; // Skip "/api/stations/"
+            int station_id = atoi(id_str);
+            
+            if (station_id <= 0) {
+                http_set_response_status(response, 400, "Bad Request");
+                http_add_response_header(response, "Content-Type", "application/json; charset=utf-8");
+                http_set_response_body(response, "{\"message\":\"Invalid station ID\"}");
+                log_request("PATCH", request->path, 400, "{\"message\":\"Invalid station ID\"}");
+                return;
+            }
+            
+            // Проверяем, что станция существует
+            charging_station_t existing_station;
+            if (storage_get_station(station_id, &existing_station) != 0) {
+                http_set_response_status(response, 404, "Not Found");
+                http_add_response_header(response, "Content-Type", "application/json; charset=utf-8");
+                http_set_response_body(response, "{\"message\":\"Station not found\"}");
+                log_request("PATCH", request->path, 404, "{\"message\":\"Station not found\"}");
+                return;
+            }
+            
+            // Парсим JSON из тела запроса
+            if (strlen(request->body) == 0) {
+                http_set_response_status(response, 400, "Bad Request");
+                http_add_response_header(response, "Content-Type", "application/json; charset=utf-8");
+                http_set_response_body(response, "{\"message\":\"Request body is required\"}");
+                log_request("PATCH", request->path, 400, "{\"message\":\"Request body is required\"}");
+                return;
+            }
+            
+            json_value_t *json_data = json_parse(request->body);
+            if (!json_data) {
+                http_set_response_status(response, 400, "Bad Request");
+                http_add_response_header(response, "Content-Type", "application/json; charset=utf-8");
+                http_set_response_body(response, "{\"message\":\"Invalid JSON in request body\"}");
+                log_request("PATCH", request->path, 400, "{\"message\":\"Invalid JSON\"}");
+                return;
+            }
+            
+            // Копируем существующие данные и обновляем только переданные поля
+            charging_station_t updated_station = existing_station;
+            
+            // Обновляем только переданные поля
+            json_value_t *field_value;
+            
+            if ((field_value = json_object_get(json_data, "displayName"))) {
+                const char* str_val = json_get_string(field_value);
+                if (str_val) {
+                    strncpy(updated_station.display_name, str_val, MAX_STRING_LENGTH - 1);
+                    updated_station.display_name[MAX_STRING_LENGTH - 1] = '\0';
+                }
+            }
+            
+            if ((field_value = json_object_get(json_data, "technicalName"))) {
+                const char* str_val = json_get_string(field_value);
+                if (str_val) {
+                    strncpy(updated_station.technical_name, str_val, MAX_STRING_LENGTH - 1);
+                    updated_station.technical_name[MAX_STRING_LENGTH - 1] = '\0';
+                }
+            }
+            
+            if ((field_value = json_object_get(json_data, "description"))) {
+                const char* str_val = json_get_string(field_value);
+                if (str_val) {
+                    strncpy(updated_station.description, str_val, MAX_DESCRIPTION_LENGTH - 1);
+                    updated_station.description[MAX_DESCRIPTION_LENGTH - 1] = '\0';
+                }
+            }
+            
+            if ((field_value = json_object_get(json_data, "maxPower"))) {
+                updated_station.max_power = (float)json_get_number(field_value);
+            }
+            
+            if ((field_value = json_object_get(json_data, "currentPower"))) {
+                updated_station.current_power = (float)json_get_number(field_value);
+            }
+            
+            if ((field_value = json_object_get(json_data, "carConnection"))) {
+                updated_station.car_connection = json_get_bool(field_value);
+            }
+            
+            if ((field_value = json_object_get(json_data, "carChargingPermission"))) {
+                updated_station.car_charging_permission = json_get_bool(field_value);
+            }
+            
+            if ((field_value = json_object_get(json_data, "voltagePhase1"))) {
+                updated_station.voltage_phase1 = (float)json_get_number(field_value);
+            }
+            
+            if ((field_value = json_object_get(json_data, "voltagePhase2"))) {
+                updated_station.voltage_phase2 = (float)json_get_number(field_value);
+            }
+            
+            if ((field_value = json_object_get(json_data, "voltagePhase3"))) {
+                updated_station.voltage_phase3 = (float)json_get_number(field_value);
+            }
+            
+            if ((field_value = json_object_get(json_data, "singlePhaseConnection"))) {
+                updated_station.single_phase_connection = json_get_bool(field_value);
+            }
+            
+            if ((field_value = json_object_get(json_data, "fixedPower"))) {
+                updated_station.fixed_power = json_get_bool(field_value);
+            }
+            
+            // Обновляем данные в storage
+            if (storage_update_station(station_id, &updated_station) != 0) {
+                http_set_response_status(response, 500, "Internal Server Error");
+                http_add_response_header(response, "Content-Type", "application/json; charset=utf-8");
+                http_set_response_body(response, "{\"message\":\"Failed to update station\"}");
+                log_request("PATCH", request->path, 500, "{\"message\":\"Failed to update station\"}");
+                json_free(json_data);
+                return;
+            }
+            
+            // Возвращаем обновленные данные станции
+            json_value_t *response_obj = json_create_object();
+            json_object_set(response_obj, "id", json_create_number(updated_station.id));
+            json_object_set(response_obj, "displayName", json_create_string(updated_station.display_name));
+            json_object_set(response_obj, "technicalName", json_create_string(updated_station.technical_name));
+            json_object_set(response_obj, "type", json_create_string(updated_station.type));
+            json_object_set(response_obj, "status", json_create_string(updated_station.status));
+            json_object_set(response_obj, "maxPower", json_create_number(updated_station.max_power));
+            json_object_set(response_obj, "currentPower", json_create_number(updated_station.current_power));
+            
+            if (strlen(updated_station.description) > 0) {
+                json_object_set(response_obj, "description", json_create_string(updated_station.description));
+            }
+            
+            json_object_set(response_obj, "carConnection", json_create_bool(updated_station.car_connection));
+            json_object_set(response_obj, "carChargingPermission", json_create_bool(updated_station.car_charging_permission));
+            json_object_set(response_obj, "carError", json_create_bool(updated_station.car_error));
+            json_object_set(response_obj, "masterOnline", json_create_bool(updated_station.master_online));
+            json_object_set(response_obj, "masterChargingPermission", json_create_bool(updated_station.master_charging_permission));
+            json_object_set(response_obj, "masterAvailablePower", json_create_number(updated_station.master_available_power));
+            
+            json_object_set(response_obj, "voltagePhase1", json_create_number(updated_station.voltage_phase1));
+            json_object_set(response_obj, "voltagePhase2", json_create_number(updated_station.voltage_phase2));
+            json_object_set(response_obj, "voltagePhase3", json_create_number(updated_station.voltage_phase3));
+            json_object_set(response_obj, "currentPhase1", json_create_number(updated_station.current_phase1));
+            json_object_set(response_obj, "currentPhase2", json_create_number(updated_station.current_phase2));
+            json_object_set(response_obj, "currentPhase3", json_create_number(updated_station.current_phase3));
+            json_object_set(response_obj, "chargerPower", json_create_number(updated_station.charger_power));
+            
+            json_object_set(response_obj, "singlePhaseConnection", json_create_bool(updated_station.single_phase_connection));
+            json_object_set(response_obj, "powerOverconsumption", json_create_bool(updated_station.power_overconsumption));
+            json_object_set(response_obj, "fixedPower", json_create_bool(updated_station.fixed_power));
+            
+            char *response_json = json_stringify(response_obj);
+            
+            http_set_response_status(response, 200, "OK");
+            http_add_response_header(response, "Content-Type", "application/json; charset=utf-8");
+            http_set_response_body(response, response_json);
+            
+            long end_time = get_current_time_ms();
+            printf("%s [express] PATCH %s 200 in %ldms :: station updated\n", 
+                   "time", request->path, end_time - start_time);
+            
+            free(response_json);
+            json_free(response_obj);
+            json_free(json_data);
+            return;
+        }
+        
         // POST /api/esp32/scan
         if (strcmp(request->path, "/api/esp32/scan") == 0 && strcmp(request->method, "POST") == 0) {
             printf("Начинаем сканирование сети для поиска ESP32 плат...\n");

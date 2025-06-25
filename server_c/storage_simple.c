@@ -245,8 +245,91 @@ int storage_create_station(const charging_station_t *station, int *new_id) {
  * Обновление зарядной станции
  */
 int storage_update_station(int id, const charging_station_t *updates) {
-    printf("Обновлена станция с ID %d\n", id);
-    return 0;
+    stations_array_t stations;
+    stations.stations = NULL;
+    stations.count = 0;
+    stations.capacity = 0;
+    
+    if (storage_get_stations(&stations) != 0) {
+        stations_array_free(&stations);
+        return -1;
+    }
+    
+    // Находим станцию с указанным ID
+    for (int i = 0; i < stations.count; i++) {
+        if (stations.stations[i].id == id) {
+            // Обновляем данные станции
+            stations.stations[i] = *updates;
+            
+            // Сохраняем обратно в файл
+            json_value_t *json_array = json_create_array();
+            
+            for (int j = 0; j < stations.count; j++) {
+                json_value_t *station_obj = json_create_object();
+                charging_station_t *station = &stations.stations[j];
+                
+                json_object_set(station_obj, "id", json_create_number(station->id));
+                json_object_set(station_obj, "displayName", json_create_string(station->display_name));
+                json_object_set(station_obj, "technicalName", json_create_string(station->technical_name));
+                json_object_set(station_obj, "type", json_create_string(station->type));
+                json_object_set(station_obj, "status", json_create_string(station->status));
+                json_object_set(station_obj, "maxPower", json_create_number(station->max_power));
+                json_object_set(station_obj, "currentPower", json_create_number(station->current_power));
+                
+                if (strlen(station->ip_address) > 0) {
+                    json_object_set(station_obj, "ipAddress", json_create_string(station->ip_address));
+                }
+                if (strlen(station->description) > 0) {
+                    json_object_set(station_obj, "description", json_create_string(station->description));
+                }
+                
+                json_object_set(station_obj, "carConnection", json_create_bool(station->car_connection));
+                json_object_set(station_obj, "carChargingPermission", json_create_bool(station->car_charging_permission));
+                json_object_set(station_obj, "carError", json_create_bool(station->car_error));
+                json_object_set(station_obj, "masterOnline", json_create_bool(station->master_online));
+                json_object_set(station_obj, "masterChargingPermission", json_create_bool(station->master_charging_permission));
+                json_object_set(station_obj, "masterAvailablePower", json_create_number(station->master_available_power));
+                
+                json_object_set(station_obj, "voltagePhase1", json_create_number(station->voltage_phase1));
+                json_object_set(station_obj, "voltagePhase2", json_create_number(station->voltage_phase2));
+                json_object_set(station_obj, "voltagePhase3", json_create_number(station->voltage_phase3));
+                json_object_set(station_obj, "currentPhase1", json_create_number(station->current_phase1));
+                json_object_set(station_obj, "currentPhase2", json_create_number(station->current_phase2));
+                json_object_set(station_obj, "currentPhase3", json_create_number(station->current_phase3));
+                json_object_set(station_obj, "chargerPower", json_create_number(station->charger_power));
+                
+                json_object_set(station_obj, "singlePhaseConnection", json_create_bool(station->single_phase_connection));
+                json_object_set(station_obj, "powerOverconsumption", json_create_bool(station->power_overconsumption));
+                json_object_set(station_obj, "fixedPower", json_create_bool(station->fixed_power));
+                
+                json_array_add(json_array, station_obj);
+            }
+            
+            char *json_string = json_stringify(json_array);
+            
+            FILE *file = fopen("../data/stations.json", "w");
+            if (file) {
+                fputs(json_string, file);
+                fclose(file);
+                printf("Обновлена станция с ID %d и сохранена в файл\n", id);
+            } else {
+                printf("Ошибка при сохранении обновленной станции с ID %d\n", id);
+                free(json_string);
+                json_free(json_array);
+                stations_array_free(&stations);
+                return -1;
+            }
+            
+            free(json_string);
+            json_free(json_array);
+            stations_array_free(&stations);
+            return 0;
+        }
+    }
+    
+    stations_array_free(&stations);
+    printf("Станция с ID %d не найдена для обновления\n", id);
+    return -1;
 }
 
 /**
