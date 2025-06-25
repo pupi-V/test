@@ -91,11 +91,33 @@ void jsonToStation(const JsonObject& json, ChargingStation& station) {
   if (json["currentL3"]) station.currentL3 = json["currentL3"];
 }
 
+void saveStationsToFile() {
+  File file = SPIFFS.open("/stations.json", "w");
+  if (!file) {
+    Serial.println("Ошибка создания файла stations.json");
+    return;
+  }
+
+  JsonDocument doc;
+  JsonArray array = doc.to<JsonArray>();
+
+  for (int i = 0; i < stationCount; i++) {
+    JsonObject station = array.add<JsonObject>();
+    stationToJson(stations[i], station);
+  }
+
+  serializeJson(doc, file);
+  file.close();
+  Serial.println("Данные станций сохранены в файл");
+}
+
 String getCurrentTime() {
   time_t now;
   time(&now);
   return String(ctime(&now));
 }
+
+void saveStationsToFile(); // Объявление функции
 
 void createTestStations() {
   if (stationCount == 0) {
@@ -172,26 +194,6 @@ int getNextStationId() {
     }
   }
   return maxId + 1;
-}
-
-void saveStationsToFile() {
-  File file = SPIFFS.open("/stations.json", "w");
-  if (!file) {
-    Serial.println("Ошибка создания файла stations.json");
-    return;
-  }
-
-  JsonDocument doc;
-  JsonArray array = doc.to<JsonArray>();
-
-  for (int i = 0; i < stationCount; i++) {
-    JsonObject station = array.add<JsonObject>();
-    stationToJson(stations[i], station);
-  }
-
-  serializeJson(doc, file);
-  file.close();
-  Serial.println("Данные станций сохранены в файл");
 }
 
 void loadStationsFromFile() {
@@ -350,7 +352,8 @@ void setupAPIRoutes() {
       }
 
       ChargingStation newStation;
-      jsonToStation(doc, newStation);
+      JsonObject obj = doc.as<JsonObject>();
+      jsonToStation(obj, newStation);
       newStation.id = getNextStationId();
       stations[stationCount] = newStation;
       stationCount++;
@@ -358,7 +361,8 @@ void setupAPIRoutes() {
       saveStationsToFile();
 
       JsonDocument responseDoc;
-      stationToJson(newStation, responseDoc);
+      JsonObject responseObj = responseDoc.to<JsonObject>();
+      stationToJson(newStation, responseObj);
 
       String response;
       serializeJson(responseDoc, response);
@@ -385,11 +389,13 @@ void setupAPIRoutes() {
         return;
       }
 
-      updateStationFromJson(stations[stationIndex], doc);
+      JsonObject obj = doc.as<JsonObject>();
+      updateStationFromJson(stations[stationIndex], obj);
       saveStationsToFile();
 
       JsonDocument responseDoc;
-      stationToJson(stations[stationIndex], responseDoc);
+      JsonObject responseObj = responseDoc.to<JsonObject>();
+      stationToJson(stations[stationIndex], responseObj);
 
       String response;
       serializeJson(responseDoc, response);
