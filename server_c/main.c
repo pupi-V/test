@@ -323,9 +323,15 @@ void handle_request(const http_request_t *request, http_response_t *response) {
             }
             
             if ((field_value = json_object_get(json_data, "maxPower"))) {
-                float new_power = (float)json_get_number(field_value);
+                printf("DEBUG: Found maxPower field in JSON\n");
+                double raw_number = json_get_number(field_value);
+                float new_power = (float)raw_number;
+                printf("DEBUG: Raw number from JSON: %f, converted to float: %.2f\n", raw_number, new_power);
                 printf("DEBUG: Updating maxPower from %.2f to %.2f\n", updated_station.max_power, new_power);
                 updated_station.max_power = new_power;
+                printf("DEBUG: maxPower updated successfully to %.2f\n", updated_station.max_power);
+            } else {
+                printf("DEBUG: maxPower field NOT found in JSON\n");
             }
             
             if ((field_value = json_object_get(json_data, "currentPower"))) {
@@ -365,6 +371,9 @@ void handle_request(const http_request_t *request, http_response_t *response) {
             }
             
             // Обновляем данные в storage
+            printf("DEBUG: About to call storage_update_station with name='%s', maxPower=%.2f\n", 
+                   updated_station.display_name, updated_station.max_power);
+            
             if (storage_update_station(station_id, &updated_station) != 0) {
                 http_set_response_status(response, 500, "Internal Server Error");
                 http_add_response_header(response, "Content-Type", "application/json; charset=utf-8");

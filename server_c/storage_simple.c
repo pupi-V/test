@@ -245,21 +245,34 @@ int storage_create_station(const charging_station_t *station, int *new_id) {
  * Обновление зарядной станции
  */
 int storage_update_station(int id, const charging_station_t *updates) {
+    printf("DEBUG: storage_update_station called for ID %d\n", id);
+    
     stations_array_t stations;
     stations.stations = NULL;
     stations.count = 0;
     stations.capacity = 0;
     
     if (storage_get_stations(&stations) != 0) {
+        printf("DEBUG: Failed to load stations for update\n");
         stations_array_free(&stations);
         return -1;
     }
     
+    printf("DEBUG: Loaded %d stations for update\n", stations.count);
+    
     // Находим станцию с указанным ID
     for (int i = 0; i < stations.count; i++) {
         if (stations.stations[i].id == id) {
+            printf("DEBUG: Found station with ID %d at index %d\n", id, i);
+            printf("DEBUG: Old data: name='%s', maxPower=%.2f\n", 
+                   stations.stations[i].display_name, stations.stations[i].max_power);
+            
             // Обновляем данные станции
             stations.stations[i] = *updates;
+            stations.stations[i].id = id; // Убеждаемся, что ID не потерялся
+            
+            printf("DEBUG: New data: name='%s', maxPower=%.2f\n", 
+                   stations.stations[i].display_name, stations.stations[i].max_power);
             
             // Сохраняем обратно в файл
             json_value_t *json_array = json_create_array();
