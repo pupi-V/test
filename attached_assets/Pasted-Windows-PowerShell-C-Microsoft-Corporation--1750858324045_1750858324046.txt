@@ -1,0 +1,295 @@
+Windows PowerShell
+(C) Корпорация Майкрософт (Microsoft Corporation). Все права защищены.
+
+Установите последнюю версию PowerShell для новых функций и улучшения! https://aka.ms/PSWindows
+
+PS C:\Windows\system32> cd C:\Users\Juniors\Desktop\test-main
+PS C:\Users\Juniors\Desktop\test-main> cd esp32_project
+PS C:\Users\Juniors\Desktop\test-main\esp32_project> python scripts/build_and_upload.py
+🔌 ESP32 Charging Station Management System
+📋 Автоматическая сборка и загрузка
+
+✅ PlatformIO установлен: PlatformIO Core, version 6.1.18
+
+==================================================
+🔄 Очистка проекта
+==================================================
+✅ Очистка проекта - УСПЕШНО
+Вывод:
+Processing esp32dev (platform: espressif32; board: esp32dev; framework: arduino)
+--------------------------------------------------------------------------------
+Verbose mode can be enabled via `-v, --verbose` option
+Removing .pio\build\esp32dev
+Done cleaning
+========================= [SUCCESS] Took 1.00 seconds =========================
+
+🧹 Проект очищен
+
+==================================================
+🔄 Сборка прошивки
+==================================================
+❌ Сборка прошивки - ОШИБКА
+Код ошибки: 1
+Стандартный вывод:
+Processing esp32dev (platform: espressif32; board: esp32dev; framework: arduino)
+--------------------------------------------------------------------------------
+Library Manager: Installing mathieucarbou/ESP Async WebServer @ ^3.0.6
+Unpacking 0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100%
+Library Manager: ESP Async WebServer@3.0.6 has been installed!
+Library Manager: Resolving dependencies...
+Library Manager: Installing mathieucarbou/Async TCP @ ^3.1.4
+Unpacking 0% 10% 20% 30% 40% 50% 60% 70% 80%
+Library Manager: Async TCP@3.1.4 has been installed!
+Library Manager: Installing bblanchon/ArduinoJson @ ^7.4.2
+Unpacking 0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100%
+Library Manager: ArduinoJson@7.4.2 has been installed!
+Library Manager: Installing git+https://github.com/espressif/arduino-esp32.git#2.0.17
+git version 2.45.2.windows.1
+Library Manager: ArduinoOTA@2.0.0+sha.5e19e08 has been installed!
+Verbose mode can be enabled via `-v, --verbose` option
+CONFIGURATION: https://docs.platformio.org/page/boards/espressif32/esp32dev.html
+PLATFORM: Espressif 32 (6.11.0) > Espressif ESP32 Dev Module
+HARDWARE: ESP32 240MHz, 320KB RAM, 4MB Flash
+DEBUG: Current (cmsis-dap) External (cmsis-dap, esp-bridge, esp-prog, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa)
+PACKAGES:
+ - framework-arduinoespressif32 @ 3.20017.241212+sha.dcc1105b
+ - tool-esptoolpy @ 1.40501.0 (4.5.1)
+ - toolchain-xtensa-esp32 @ 8.4.0+2021r2-patch5
+LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+LDF Modes: Finder ~ chain, Compatibility ~ soft
+Found 37 compatible libraries
+Scanning dependencies...
+Dependency Graph
+|-- ESP Async WebServer @ 3.0.6
+|-- Async TCP @ 3.1.4
+|-- ArduinoJson @ 7.4.2
+|-- ArduinoOTA @ 2.0.0+sha.5e19e08
+|-- ESPmDNS @ 2.0.0
+|-- SPIFFS @ 2.0.0
+|-- WiFi @ 2.0.0
+Building in release mode
+Converting .pio\build\esp32dev\index.html.txt.o
+Compiling .pio\build\esp32dev\src\main.cpp.o
+Building .pio\build\esp32dev\bootloader.bin
+Generating partitions .pio\build\esp32dev\partitions.bin
+esptool.py v4.5.1
+Creating esp32 image...
+Merged 1 ELF section
+Successfully created esp32 image.
+Compiling .pio\build\esp32dev\libbcd\Async TCP\AsyncTCP.cpp.o
+Compiling .pio\build\esp32dev\lib214\FS\FS.cpp.o
+Compiling .pio\build\esp32dev\lib214\FS\vfs_api.cpp.o
+Compiling .pio\build\esp32dev\lib623\WiFi\WiFi.cpp.o
+Compiling .pio\build\esp32dev\lib623\WiFi\WiFiAP.cpp.o
+Compiling .pio\build\esp32dev\lib623\WiFi\WiFiClient.cpp.o
+Compiling .pio\build\esp32dev\lib623\WiFi\WiFiGeneric.cpp.o
+Compiling .pio\build\esp32dev\lib623\WiFi\WiFiMulti.cpp.o
+Compiling .pio\build\esp32dev\lib623\WiFi\WiFiSTA.cpp.o
+Compiling .pio\build\esp32dev\lib623\WiFi\WiFiScan.cpp.o
+Compiling .pio\build\esp32dev\lib623\WiFi\WiFiServer.cpp.o
+Compiling .pio\build\esp32dev\lib623\WiFi\WiFiUdp.cpp.o
+Compiling .pio\build\esp32dev\lib62a\WebServer\Parsing.cpp.o
+Archiving .pio\build\esp32dev\lib214\libFS.a
+Archiving .pio\build\esp32dev\libbcd\libAsync TCP.a
+Compiling .pio\build\esp32dev\lib62a\WebServer\WebServer.cpp.o
+Compiling .pio\build\esp32dev\lib62a\WebServer\detail\mimetable.cpp.o
+
+Ошибки:
+Cloning into 'C:\Users\Juniors\.platformio\.cache\tmp\pkg-installing-p81raq15'...
+Note: switching to '5e19e086c43d0fa5e5a596497ff8f11a0a43f6c2'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+Updating files:  15% (1559/10226)
+Updating files:  16% (1637/10226)
+Updating files:  17% (1739/10226)
+Updating files:  18% (1841/10226)
+Updating files:  19% (1943/10226)
+Updating files:  20% (2046/10226)
+Updating files:  21% (2148/10226)
+Updating files:  22% (2250/10226)
+Updating files:  23% (2352/10226)
+Updating files:  24% (2455/10226)
+Updating files:  25% (2557/10226)
+Updating files:  26% (2659/10226)
+Updating files:  27% (2762/10226)
+Updating files:  28% (2864/10226)
+Updating files:  29% (2966/10226)
+Updating files:  29% (3039/10226)
+Updating files:  30% (3068/10226)
+Updating files:  30% (3157/10226)
+Updating files:  31% (3171/10226)
+Updating files:  32% (3273/10226)
+Updating files:  33% (3375/10226)
+Updating files:  34% (3477/10226)
+Updating files:  35% (3580/10226)
+Updating files:  36% (3682/10226)
+Updating files:  37% (3784/10226)
+Updating files:  38% (3886/10226)
+Updating files:  39% (3989/10226)
+Updating files:  40% (4091/10226)
+Updating files:  41% (4193/10226)
+Updating files:  42% (4295/10226)
+Updating files:  43% (4398/10226)
+Updating files:  44% (4500/10226)
+Updating files:  45% (4602/10226)
+Updating files:  46% (4704/10226)
+Updating files:  47% (4807/10226)
+Updating files:  48% (4909/10226)
+Updating files:  49% (5011/10226)
+Updating files:  50% (5113/10226)
+Updating files:  50% (5207/10226)
+Updating files:  51% (5216/10226)
+Updating files:  51% (5297/10226)
+Updating files:  52% (5318/10226)
+Updating files:  53% (5420/10226)
+Updating files:  54% (5523/10226)
+Updating files:  55% (5625/10226)
+Updating files:  56% (5727/10226)
+Updating files:  57% (5829/10226)
+Updating files:  58% (5932/10226)
+Updating files:  59% (6034/10226)
+Updating files:  60% (6136/10226)
+Updating files:  61% (6238/10226)
+Updating files:  62% (6341/10226)
+Updating files:  63% (6443/10226)
+Updating files:  64% (6545/10226)
+Updating files:  65% (6647/10226)
+Updating files:  66% (6750/10226)
+Updating files:  67% (6852/10226)
+Updating files:  68% (6954/10226)
+Updating files:  69% (7056/10226)
+Updating files:  70% (7159/10226)
+Updating files:  71% (7261/10226)
+Updating files:  71% (7299/10226)
+Updating files:  72% (7363/10226)
+Updating files:  73% (7465/10226)
+Updating files:  73% (7496/10226)
+Updating files:  74% (7568/10226)
+Updating files:  75% (7670/10226)
+Updating files:  76% (7772/10226)
+Updating files:  77% (7875/10226)
+Updating files:  78% (7977/10226)
+Updating files:  79% (8079/10226)
+Updating files:  80% (8181/10226)
+Updating files:  81% (8284/10226)
+Updating files:  82% (8386/10226)
+Updating files:  83% (8488/10226)
+Updating files:  84% (8590/10226)
+Updating files:  85% (8693/10226)
+Updating files:  86% (8795/10226)
+Updating files:  87% (8897/10226)
+Updating files:  88% (8999/10226)
+Updating files:  89% (9102/10226)
+Updating files:  90% (9204/10226)
+Updating files:  91% (9306/10226)
+Updating files:  91% (9312/10226)
+Updating files:  92% (9408/10226)
+Updating files:  93% (9511/10226)
+Updating files:  94% (9613/10226)
+Updating files:  95% (9715/10226)
+Updating files:  96% (9817/10226)
+Updating files:  96% (9823/10226)
+Updating files:  97% (9920/10226)
+Updating files:  98% (10022/10226)
+Updating files:  99% (10124/10226)
+Updating files: 100% (10226/10226)
+Updating files: 100% (10226/10226), done.
+src/main.cpp: In function 'void updateStationFromJson(ChargingStation&, const ArduinoJson::V742PB22::JsonObject&)':
+src/main.cpp:96:24: error: 'getCurrentTime' was not declared in this scope
+   station.lastUpdate = getCurrentTime();
+                        ^~~~~~~~~~~~~~
+src/main.cpp:96:24: note: suggested alternative: 'getLocalTime'
+   station.lastUpdate = getCurrentTime();
+                        ^~~~~~~~~~~~~~
+                        getLocalTime
+src/main.cpp: In function 'void loadStationsFromFile()':
+src/main.cpp:146:5: error: 'createTestStations' was not declared in this scope
+     createTestStations();
+     ^~~~~~~~~~~~~~~~~~
+src/main.cpp:146:5: note: suggested alternative: 'getNextStationId'
+     createTestStations();
+     ^~~~~~~~~~~~~~~~~~
+     getNextStationId
+src/main.cpp: In lambda function:
+src/main.cpp:350:21: error: invalid initialization of reference of type 'const ArduinoJson::V742PB22::JsonObject&' from expression of type 'ArduinoJson::V742PB22::JsonDocument'
+       jsonToStation(doc, newStation);
+                     ^~~
+src/main.cpp:73:6: note: in passing argument 1 of 'void jsonToStation(const ArduinoJson::V742PB22::JsonObject&, ChargingStation&)'
+ void jsonToStation(const JsonObject& json, ChargingStation& station) {
+      ^~~~~~~~~~~~~
+src/main.cpp:358:33: error: invalid initialization of reference of type 'ArduinoJson::V742PB22::JsonObject&' from expression of type 'ArduinoJson::V742PB22::JsonDocument'
+       stationToJson(newStation, responseDoc);
+                                 ^~~~~~~~~~~
+src/main.cpp:50:6: note: in passing argument 2 of 'void stationToJson(const ChargingStation&, ArduinoJson::V742PB22::JsonObject&)'
+ void stationToJson(const ChargingStation& station, JsonObject& json) {
+      ^~~~~~~~~~~~~
+src/main.cpp: In lambda function:
+src/main.cpp:385:53: error: invalid initialization of reference of type 'const ArduinoJson::V742PB22::JsonObject&' from expression of type 'ArduinoJson::V742PB22::JsonDocument'
+       updateStationFromJson(stations[stationIndex], doc);
+                                                     ^~~
+src/main.cpp:94:6: note: in passing argument 2 of 'void updateStationFromJson(ChargingStation&, const ArduinoJson::V742PB22::JsonObject&)'
+ void updateStationFromJson(ChargingStation& station, const JsonObject& json) {
+      ^~~~~~~~~~~~~~~~~~~~~
+src/main.cpp:389:45: error: invalid initialization of reference of type 'ArduinoJson::V742PB22::JsonObject&' from expression of type 'ArduinoJson::V742PB22::JsonDocument'
+       stationToJson(stations[stationIndex], responseDoc);
+                                             ^~~~~~~~~~~
+src/main.cpp:50:6: note: in passing argument 2 of 'void stationToJson(const ChargingStation&, ArduinoJson::V742PB22::JsonObject&)'
+ void stationToJson(const ChargingStation& station, JsonObject& json) {
+      ^~~~~~~~~~~~~
+*** [.pio\build\esp32dev\src\main.cpp.o] Error 1
+========================= [FAILED] Took 142.66 seconds =========================
+
+
+==================================================
+🔄 Сборка файловой системы
+==================================================
+✅ Сборка файловой системы - УСПЕШНО
+Вывод:
+Processing esp32dev (platform: espressif32; board: esp32dev; framework: arduino)
+--------------------------------------------------------------------------------
+Verbose mode can be enabled via `-v, --verbose` option
+CONFIGURATION: https://docs.platformio.org/page/boards/espressif32/esp32dev.html
+PLATFORM: Espressif 32 (6.11.0) > Espressif ESP32 Dev Module
+HARDWARE: ESP32 240MHz, 320KB RAM, 4MB Flash
+DEBUG: Current (cmsis-dap) External (cmsis-dap, esp-bridge, esp-prog, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa)
+PACKAGES:
+ - framework-arduinoespressif32 @ 3.20017.241212+sha.dcc1105b
+ - tool-esptoolpy @ 1.40501.0 (4.5.1)
+ - tool-mkspiffs @ 2.230.0 (2.30)
+ - toolchain-xtensa-esp32 @ 8.4.0+2021r2-patch5
+LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+LDF Modes: Finder ~ chain, Compatibility ~ soft
+Found 37 compatible libraries
+Scanning dependencies...
+Dependency Graph
+|-- ESP Async WebServer @ 3.0.6
+|-- Async TCP @ 3.1.4
+|-- ArduinoJson @ 7.4.2
+|-- ArduinoOTA @ 2.0.0+sha.5e19e08
+|-- ESPmDNS @ 2.0.0
+|-- SPIFFS @ 2.0.0
+|-- WiFi @ 2.0.0
+Building in release mode
+Building FS image from 'data' directory to .pio\build\esp32dev\spiffs.bin
+/stations.json
+/www/index.html
+========================= [SUCCESS] Took 1.64 seconds =========================
+
+✅ Файловая система собрана успешно
+
+❌ Критические ошибки при сборке прошивки
+PS C:\Users\Juniors\Desktop\test-main\esp32_project> фф
