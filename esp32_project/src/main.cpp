@@ -6,9 +6,9 @@
 #include <ESPmDNS.h>
 #include <time.h>
 
-// Настройки WiFi точки доступа
-const char* ssid = "ESP32_ChargingStations";
-const char* password = "12345678";
+// Настройки WiFi сети для подключения
+const char* ssid = "ВАШ_WIFI_SSID";        // Замените на имя вашей WiFi сети
+const char* password = "ВАШ_WIFI_ПАРОЛЬ";  // Замените на пароль вашей WiFi сети
 
 // Веб-сервер и WebSocket
 AsyncWebServer server(80);
@@ -473,13 +473,32 @@ void setup() {
   // Загрузка данных станций из файла
   loadStationsFromFile();
 
-  // Настройка WiFi точки доступа
-  WiFi.mode(WIFI_AP_STA);
-  WiFi.softAP(ssid, password);
-
-  Serial.println("✓ WiFi точка доступа создана");
-  Serial.print("IP адрес: ");
-  Serial.println(WiFi.softAPIP());
+  // Подключение к существующей WiFi сети
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  
+  Serial.print("Подключение к WiFi сети: ");
+  Serial.println(ssid);
+  
+  int attempts = 0;
+  while (WiFi.status() != WL_CONNECTED && attempts < 30) {
+    delay(1000);
+    Serial.print(".");
+    attempts++;
+  }
+  
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.println("\n✓ WiFi подключен успешно");
+    Serial.print("IP адрес: ");
+    Serial.println(WiFi.localIP());
+  } else {
+    Serial.println("\n❌ Не удалось подключиться к WiFi");
+    Serial.println("Переключение в режим точки доступа...");
+    WiFi.mode(WIFI_AP);
+    WiFi.softAP("ESP32_ChargingStations", "12345678");
+    Serial.print("IP адрес точки доступа: ");
+    Serial.println(WiFi.softAPIP());
+  }
 
   // Настройка времени
   configTime(3 * 3600, 0, "pool.ntp.org", "time.nist.gov");
@@ -561,11 +580,17 @@ fetch('/api/stations')
   server.begin();
   Serial.println("✓ Веб-сервер запущен на порту 80");
   Serial.println("📡 Доступ к системе:");
-  Serial.printf("   WiFi сеть: %s\n", ssid);
-  Serial.printf("   Пароль: %s\n", password);
-  Serial.printf("   IP адрес: http://%s\n", WiFi.softAPIP().toString().c_str());
-  Serial.printf("   mDNS: http://chargingstations.local\n");
-  Serial.printf("   API: http://%s/api/stations\n", WiFi.softAPIP().toString().c_str());
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.printf("   WiFi сеть: %s\n", ssid);
+    Serial.printf("   IP адрес: http://%s\n", WiFi.localIP().toString().c_str());
+    Serial.printf("   mDNS: http://chargingstations.local\n");
+    Serial.printf("   API: http://%s/api/stations\n", WiFi.localIP().toString().c_str());
+  } else {
+    Serial.printf("   WiFi сеть: ESP32_ChargingStations\n");
+    Serial.printf("   Пароль: 12345678\n");
+    Serial.printf("   IP адрес: http://%s\n", WiFi.softAPIP().toString().c_str());
+    Serial.printf("   API: http://%s/api/stations\n", WiFi.softAPIP().toString().c_str());
+  }
 
   // Создание тестовых станций если файл не найден
   if (stationCount == 0) {
