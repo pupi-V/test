@@ -327,11 +327,13 @@ void setupAPIRoutes() {
 
   // OPTIONS обработчик для CORS
   server.on("/api/stations", HTTP_OPTIONS, [](AsyncWebServerRequest* request) {
+    Serial.println("API: OPTIONS /api/stations");
     request->send(200);
   });
 
   // GET /api/stations
   server.on("/api/stations", HTTP_GET, [](AsyncWebServerRequest* request) {
+    Serial.println("API: GET /api/stations");
     JsonDocument doc;
     JsonArray array = doc.to<JsonArray>();
 
@@ -348,6 +350,7 @@ void setupAPIRoutes() {
   // POST /api/stations
   server.on("/api/stations", HTTP_POST, [](AsyncWebServerRequest* request) {}, NULL,
     [](AsyncWebServerRequest* request, uint8_t* data, size_t len, size_t index, size_t total) {
+      Serial.printf("API: POST /api/stations (получено %d байт)\n", len);
       if (stationCount >= 50) {
         request->send(400, "application/json", "{\"error\":\"Максимальное количество станций достигнуто\"}");
         return;
@@ -384,6 +387,7 @@ void setupAPIRoutes() {
     [](AsyncWebServerRequest* request, uint8_t* data, size_t len, size_t index, size_t total) {
       String idStr = request->pathArg(0);
       int stationId = idStr.toInt();
+      Serial.printf("API: PATCH /api/stations/%d (получено %d байт)\n", stationId, len);
       int stationIndex = findStationIndex(stationId);
 
       if (stationIndex < 0) {
@@ -416,6 +420,7 @@ void setupAPIRoutes() {
   server.on("^\\/api\\/stations\\/([0-9]+)$", HTTP_DELETE, [](AsyncWebServerRequest* request) {
     String idStr = request->pathArg(0);
     int stationId = idStr.toInt();
+    Serial.printf("API: DELETE /api/stations/%d\n", stationId);
     int stationIndex = findStationIndex(stationId);
 
     if (stationIndex < 0) {
@@ -435,6 +440,7 @@ void setupAPIRoutes() {
 
   // POST /api/esp32/scan
   server.on("/api/esp32/scan", HTTP_POST, [](AsyncWebServerRequest* request) {
+    Serial.println("API: POST /api/esp32/scan");
     JsonDocument doc;
     JsonArray array = doc.to<JsonArray>();
 
@@ -491,17 +497,75 @@ void setup() {
   // API маршруты
   setupAPIRoutes();
 
+  // Проверка наличия веб-файлов
+  if (!SPIFFS.exists("/www/index.html")) {
+    Serial.println("ВНИМАНИЕ: /www/index.html не найден, создаем базовую страницу");
+    File file = SPIFFS.open("/index.html", "w");
+    if (file) {
+      file.print(R"(<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>ESP32 Charging Stations</title></head>
+<body><h1>ESP32 Charging Station System</h1>
+<p>Система управления зарядными станциями работает!</p>
+<p>API доступно по адресу: <a href="/api/stations">/api/stations</a></p>
+<script>
+fetch('/api/stations')
+  .then(r => r.json())
+  .then(data => {
+    document.body.innerHTML += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+  })
+  .catch(e => {
+    document.body.innerHTML += '<p style="color:red">Ошибка API: ' + e + '</p>';
+  });
+</script></body></html>)");
+      file.close();
+      Serial.println("✓ Создана базовая веб-страница");
+    }
+  }
+
   // Статические файлы веб-интерфейса
   server.serveStatic("/", SPIFFS, "/www/").setDefaultFile("index.html");
+  server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
 
   // Главная страница
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(SPIFFS, "/www/index.html", "text/html");
+    Serial.println("Запрос главной страницы");
+    if (SPIFFS.exists("/www/index.html")) {
+      request->send(SPIFFS, "/www/index.html", "text/html");
+    } else if (SPIFFS.exists("/index.html")) {
+      request->send(SPIFFS, "/index.html", "text/html");
+    } else {
+      request->send(200, "text/html", 
+        "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>ESP32</title></head>"
+        "<body><h1>ESP32 Charging Station System</h1>"
+        "<p>Система работает! API: <a href='/api/stations'>/api/stations</a></p></body></html>");
+    }
+  });
+
+  // Обработчик для всех неизвестных запросов
+  server.onNotFound([](AsyncWebServerRequest *request) {
+    String url = request->url();
+    String method = request->methodToString();
+    Serial.printf("404: %s %s\n", method.c_str(), url.c_str());
+    
+    if (url.startsWith("/api/")) {
+      request->send(404, "application/json", "{\"error\":\"API endpoint not found\"}");
+    } else {
+      request->send(404, "text/html", 
+        "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>404</title></head>"
+        "<body><h1>404 - Страница не найдена</h1>"
+        "<p><a href='/'>Главная страница</a> | <a href='/api/stations'>API станций</a></p></body></html>");
+    }
   });
 
   // Запуск веб-сервера
   server.begin();
   Serial.println("✓ Веб-сервер запущен на порту 80");
+  Serial.println("📡 Доступ к системе:");
+  Serial.printf("   WiFi сеть: %s\n", ssid);
+  Serial.printf("   Пароль: %s\n", password);
+  Serial.printf("   IP адрес: http://%s\n", WiFi.softAPIP().toString().c_str());
+  Serial.printf("   mDNS: http://chargingstations.local\n");
+  Serial.printf("   API: http://%s/api/stations\n", WiFi.softAPIP().toString().c_str());
 
   // Создание тестовых станций если файл не найден
   if (stationCount == 0) {
