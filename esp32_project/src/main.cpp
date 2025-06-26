@@ -6,9 +6,13 @@
 #include <ESPmDNS.h>
 #include <time.h>
 
-// Настройки WiFi сети для подключения
-const char* ssid = "ВАШ_WIFI_SSID";        // Замените на имя вашей WiFi сети
-const char* password = "ВАШ_WIFI_ПАРОЛЬ";  // Замените на пароль вашей WiFi сети
+// Настройки WiFi сети для подключения к существующей сети
+const char* ssid = "YOUR_WIFI_NETWORK";     // Замените на имя вашей WiFi сети
+const char* password = "YOUR_WIFI_PASSWORD"; // Замените на пароль вашей WiFi сети
+
+// Настройки точки доступа (резервный режим)
+const char* ap_ssid = "ESP32_ChargingStations";
+const char* ap_password = "12345678";
 
 // Веб-сервер и WebSocket
 AsyncWebServer server(80);
@@ -38,8 +42,9 @@ struct ChargingStation {
   String lastUpdate;
 };
 
-// Массив станций (максимум 50 для 16MB модуля)
-ChargingStation stations[50];
+// Массив станций (оптимизировано для реального использования)
+const int MAX_STATIONS = 20;  // Разумное количество для практического использования
+ChargingStation stations[20];
 int stationCount = 0;
 
 // Таймер для обновления данных
@@ -220,7 +225,7 @@ void loadStationsFromFile() {
   stationCount = 0;
 
   for (JsonVariant v : array) {
-    if (stationCount >= 50) break;
+    if (stationCount >= MAX_STATIONS) break;
     JsonObject obj = v.as<JsonObject>();
     stations[stationCount].id = obj["id"];
     jsonToStation(obj, stations[stationCount]);
@@ -351,7 +356,7 @@ void setupAPIRoutes() {
   server.on("/api/stations", HTTP_POST, [](AsyncWebServerRequest* request) {}, NULL,
     [](AsyncWebServerRequest* request, uint8_t* data, size_t len, size_t index, size_t total) {
       Serial.printf("API: POST /api/stations (получено %d байт)\n", len);
-      if (stationCount >= 50) {
+      if (stationCount >= MAX_STATIONS) {
         request->send(400, "application/json", "{\"error\":\"Максимальное количество станций достигнуто\"}");
         return;
       }
@@ -473,31 +478,40 @@ void setup() {
   // Загрузка данных станций из файла
   loadStationsFromFile();
 
-  // Подключение к существующей WiFi сети
+  // Сначала пытаемся подключиться к существующей WiFi сети
+  Serial.println("🔄 Попытка подключения к WiFi...");
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
   
-  Serial.print("Подключение к WiFi сети: ");
-  Serial.println(ssid);
+  Serial.printf("Подключение к сети: %s", ssid);
   
   int attempts = 0;
-  while (WiFi.status() != WL_CONNECTED && attempts < 30) {
-    delay(1000);
+  while (WiFi.status() != WL_CONNECTED && attempts < 20) {
+    delay(500);
     Serial.print(".");
     attempts++;
   }
   
   if (WiFi.status() == WL_CONNECTED) {
-    Serial.println("\n✓ WiFi подключен успешно");
-    Serial.print("IP адрес: ");
-    Serial.println(WiFi.localIP());
+    Serial.println("\n✅ WiFi подключен успешно!");
+    Serial.printf("📡 IP адрес: %s\n", WiFi.localIP().toString().c_str());
+    Serial.printf("📶 Сила сигнала: %d dBm\n", WiFi.RSSI());
   } else {
-    Serial.println("\n❌ Не удалось подключиться к WiFi");
-    Serial.println("Переключение в режим точки доступа...");
+    Serial.println("\n⚠️ Не удалось подключиться к WiFi");
+    Serial.println("🔄 Переключение в режим точки доступа...");
+    
     WiFi.mode(WIFI_AP);
-    WiFi.softAP("ESP32_ChargingStations", "12345678");
-    Serial.print("IP адрес точки доступа: ");
-    Serial.println(WiFi.softAPIP());
+    bool ap_result = WiFi.softAP(ap_ssid, ap_password);
+    
+    if (ap_result) {
+      Serial.println("✅ Точка доступа создана успешно!");
+      Serial.printf("📡 Сеть: %s\n", ap_ssid);
+      Serial.printf("🔑 Пароль: %s\n", ap_password);
+      Serial.printf("🌐 IP адрес: %s\n", WiFi.softAPIP().toString().c_str());
+    } else {
+      Serial.println("❌ Ошибка создания точки доступа!");
+      return;
+    }
   }
 
   // Настройка времени
@@ -606,7 +620,16 @@ void loop() {
     updateStationsData();
     broadcastStationsUpdate();
     lastUpdate = millis();
-    Serial.printf("Данные обновлены. Подключенных клиентов: %u\n", ws.count());
+    
+    // Расширенная информация о состоянии системы
+    Serial.printf("📊 Данные обновлены | Клиентов: %u | Станций: %d | Свободная память: %d байт\n", 
+                  ws.count(), stationCount, ESP.getFreeHeap());
+    
+    // Проверка WiFi соединения
+    if (WiFi.status() != WL_CONNECTED && WiFi.getMode() == WIFI_STA) {
+      Serial.println("⚠️ WiFi соединение потеряно, переподключение...");
+      WiFi.reconnect();
+    }
   }
 
   // Обработка WebSocket соединений
