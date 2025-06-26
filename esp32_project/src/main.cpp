@@ -117,8 +117,6 @@ String getCurrentTime() {
   return String(ctime(&now));
 }
 
-void saveStationsToFile(); // Объявление функции
-
 void createTestStations() {
   if (stationCount == 0) {
     stationCount = 2;
@@ -310,16 +308,28 @@ void onWebSocketEvent(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsE
       break;
 
     case WS_EVT_DATA:
+      Serial.printf("WebSocket получено %u байт данных\n", len);
       handleWebSocketMessage(client, data, len);
       break;
 
     case WS_EVT_PONG:
     case WS_EVT_ERROR:
+      Serial.println("WebSocket ошибка или pong");
       break;
   }
 }
 
 void setupAPIRoutes() {
+  // Настройка CORS для всех запросов
+  DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");
+  DefaultHeaders::Instance().addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
+  DefaultHeaders::Instance().addHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  // OPTIONS обработчик для CORS
+  server.on("/api/stations", HTTP_OPTIONS, [](AsyncWebServerRequest* request) {
+    request->send(200);
+  });
+
   // GET /api/stations
   server.on("/api/stations", HTTP_GET, [](AsyncWebServerRequest* request) {
     JsonDocument doc;
@@ -465,6 +475,10 @@ void setup() {
   Serial.print("IP адрес: ");
   Serial.println(WiFi.softAPIP());
 
+  // Настройка времени
+  configTime(3 * 3600, 0, "pool.ntp.org", "time.nist.gov");
+  Serial.println("✓ Настройка времени завершена");
+
   // Настройка mDNS для удобного доступа
   if (MDNS.begin("chargingstations")) {
     Serial.println("✓ mDNS запущен: http://chargingstations.local");
@@ -503,6 +517,7 @@ void loop() {
     updateStationsData();
     broadcastStationsUpdate();
     lastUpdate = millis();
+    Serial.printf("Данные обновлены. Подключенных клиентов: %u\n", ws.count());
   }
 
   // Обработка WebSocket соединений
