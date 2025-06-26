@@ -446,6 +446,221 @@ void handle_request(const http_request_t *request, http_response_t *response) {
             return;
         }
         
+        // POST /api/stations
+        if (strcmp(request->path, "/api/stations") == 0 && strcmp(request->method, "POST") == 0) {
+            if (strlen(request->body) == 0) {
+                http_set_response_status(response, 400, "Bad Request");
+                http_add_response_header(response, "Content-Type", "application/json; charset=utf-8");
+                http_set_response_body(response, "{\"message\":\"Request body is required\"}");
+                log_request("POST", "/api/stations", 400, "{\"message\":\"Request body is required\"}");
+                return;
+            }
+            
+            json_value_t *json_data = json_parse(request->body);
+            if (!json_data) {
+                http_set_response_status(response, 400, "Bad Request");
+                http_add_response_header(response, "Content-Type", "application/json; charset=utf-8");
+                http_set_response_body(response, "{\"message\":\"Invalid JSON in request body\"}");
+                log_request("POST", "/api/stations", 400, "{\"message\":\"Invalid JSON\"}");
+                return;
+            }
+            
+            // Создаем новую станцию
+            charging_station_t new_station = {0};
+            json_value_t *field_value;
+            
+            // Получаем обязательные поля
+            if ((field_value = json_object_get(json_data, "type"))) {
+                const char* str_val = json_get_string(field_value);
+                if (str_val) {
+                    strncpy(new_station.type, str_val, MAX_STRING_LENGTH - 1);
+                    new_station.type[MAX_STRING_LENGTH - 1] = '\0';
+                }
+            }
+            
+            if ((field_value = json_object_get(json_data, "displayName"))) {
+                const char* str_val = json_get_string(field_value);
+                if (str_val) {
+                    strncpy(new_station.display_name, str_val, MAX_STRING_LENGTH - 1);
+                    new_station.display_name[MAX_STRING_LENGTH - 1] = '\0';
+                }
+            }
+            
+            if ((field_value = json_object_get(json_data, "technicalName"))) {
+                const char* str_val = json_get_string(field_value);
+                if (str_val) {
+                    strncpy(new_station.technical_name, str_val, MAX_STRING_LENGTH - 1);
+                    new_station.technical_name[MAX_STRING_LENGTH - 1] = '\0';
+                }
+            }
+            
+            if ((field_value = json_object_get(json_data, "status"))) {
+                const char* str_val = json_get_string(field_value);
+                if (str_val) {
+                    strncpy(new_station.status, str_val, MAX_STRING_LENGTH - 1);
+                    new_station.status[MAX_STRING_LENGTH - 1] = '\0';
+                }
+            }
+            
+            if ((field_value = json_object_get(json_data, "maxPower"))) {
+                new_station.max_power = (float)json_get_number(field_value);
+            }
+            
+            if ((field_value = json_object_get(json_data, "currentPower"))) {
+                new_station.current_power = (float)json_get_number(field_value);
+            }
+            
+            // Устанавливаем значения по умолчанию если они не заданы
+            if (strlen(new_station.type) == 0) {
+                strcpy(new_station.type, "slave");
+            }
+            if (strlen(new_station.status) == 0) {
+                strcpy(new_station.status, "available");
+            }
+            
+            // Сохраняем станцию
+            int new_id;
+            if (storage_create_station(&new_station, &new_id) != 0) {
+                http_set_response_status(response, 500, "Internal Server Error");
+                http_add_response_header(response, "Content-Type", "application/json; charset=utf-8");
+                http_set_response_body(response, "{\"message\":\"Failed to create station\"}");
+                log_request("POST", "/api/stations", 500, "{\"message\":\"Failed to create station\"}");
+                json_free(json_data);
+                return;
+            }
+            
+            // Получаем созданную станцию для ответа
+            charging_station_t created_station;
+            if (storage_get_station(new_id, &created_station) == 0) {
+                json_value_t *response_obj = json_create_object();
+                json_object_set(response_obj, "id", json_create_number(created_station.id));
+                json_object_set(response_obj, "displayName", json_create_string(created_station.display_name));
+                json_object_set(response_obj, "technicalName", json_create_string(created_station.technical_name));
+                json_object_set(response_obj, "type", json_create_string(created_station.type));
+                json_object_set(response_obj, "status", json_create_string(created_station.status));
+                json_object_set(response_obj, "maxPower", json_create_number(created_station.max_power));
+                json_object_set(response_obj, "currentPower", json_create_number(created_station.current_power));
+                
+                char *response_json = json_stringify(response_obj);
+                
+                http_set_response_status(response, 201, "Created");
+                http_add_response_header(response, "Content-Type", "application/json; charset=utf-8");
+                http_set_response_body(response, response_json);
+                
+                long end_time = get_current_time_ms();
+                printf("%s [express] POST /api/stations 201 in %ldms :: station created\n", 
+                       "time", end_time - start_time);
+                
+                free(response_json);
+                json_free(response_obj);
+                json_free(json_data);
+                return;
+            }
+            
+            json_free(json_data);
+            http_set_response_status(response, 500, "Internal Server Error");
+            http_set_response_body(response, "{\"message\":\"Failed to retrieve created station\"}");
+            log_request("POST", "/api/stations", 500, "{\"message\":\"Failed to retrieve created station\"}");
+            return;
+        }
+        
+        // DELETE /api/stations/:id
+        if (strncmp(request->path, "/api/stations/", 14) == 0 && strcmp(request->method, "DELETE") == 0) {
+            const char *id_str = request->path + 14; // Skip "/api/stations/"
+            int station_id = atoi(id_str);
+            
+            if (station_id <= 0) {
+                http_set_response_status(response, 400, "Bad Request");
+                http_add_response_header(response, "Content-Type", "application/json; charset=utf-8");
+                http_set_response_body(response, "{\"message\":\"Invalid station ID\"}");
+                log_request("DELETE", request->path, 400, "{\"message\":\"Invalid station ID\"}");
+                return;
+            }
+            
+            if (storage_delete_station(station_id) != 0) {
+                http_set_response_status(response, 404, "Not Found");
+                http_add_response_header(response, "Content-Type", "application/json; charset=utf-8");
+                http_set_response_body(response, "{\"message\":\"Station not found\"}");
+                log_request("DELETE", request->path, 404, "{\"message\":\"Station not found\"}");
+                return;
+            }
+            
+            http_set_response_status(response, 204, "No Content");
+            http_set_response_body(response, "");
+            
+            long end_time = get_current_time_ms();
+            printf("%s [express] DELETE %s 204 in %ldms :: station deleted\n", 
+                   "time", request->path, end_time - start_time);
+            return;
+        }
+        
+        // POST /api/board/connect
+        if (strcmp(request->path, "/api/board/connect") == 0 && strcmp(request->method, "POST") == 0) {
+            if (strlen(request->body) == 0) {
+                http_set_response_status(response, 400, "Bad Request");
+                http_add_response_header(response, "Content-Type", "application/json; charset=utf-8");
+                http_set_response_body(response, "{\"message\":\"Request body is required\"}");
+                log_request("POST", "/api/board/connect", 400, "{\"message\":\"Request body is required\"}");
+                return;
+            }
+            
+            json_value_t *json_data = json_parse(request->body);
+            if (!json_data) {
+                http_set_response_status(response, 400, "Bad Request");
+                http_add_response_header(response, "Content-Type", "application/json; charset=utf-8");
+                http_set_response_body(response, "{\"message\":\"Invalid JSON in request body\"}");
+                log_request("POST", "/api/board/connect", 400, "{\"message\":\"Invalid JSON\"}");
+                return;
+            }
+            
+            json_value_t *board_id_field = json_object_get(json_data, "boardId");
+            if (!board_id_field) {
+                http_set_response_status(response, 400, "Bad Request");
+                http_add_response_header(response, "Content-Type", "application/json; charset=utf-8");
+                http_set_response_body(response, "{\"message\":\"Board ID is required\"}");
+                log_request("POST", "/api/board/connect", 400, "{\"message\":\"Board ID is required\"}");
+                json_free(json_data);
+                return;
+            }
+            
+            int board_id = (int)json_get_number(board_id_field);
+            
+            charging_station_t station;
+            if (storage_get_station(board_id, &station) != 0) {
+                http_set_response_status(response, 404, "Not Found");
+                http_add_response_header(response, "Content-Type", "application/json; charset=utf-8");
+                http_set_response_body(response, "{\"message\":\"Board not found\"}");
+                log_request("POST", "/api/board/connect", 404, "{\"message\":\"Board not found\"}");
+                json_free(json_data);
+                return;
+            }
+            
+            // Создаем ответ с данными платы
+            json_value_t *response_obj = json_create_object();
+            json_object_set(response_obj, "id", json_create_number(station.id));
+            json_object_set(response_obj, "type", json_create_string(station.type));
+            json_object_set(response_obj, "displayName", json_create_string(station.display_name));
+            json_object_set(response_obj, "technicalName", json_create_string(station.technical_name));
+            json_object_set(response_obj, "status", json_create_string(station.status));
+            json_object_set(response_obj, "maxPower", json_create_number(station.max_power));
+            json_object_set(response_obj, "currentPower", json_create_number(station.current_power));
+            
+            char *response_json = json_stringify(response_obj);
+            
+            http_set_response_status(response, 200, "OK");
+            http_add_response_header(response, "Content-Type", "application/json; charset=utf-8");
+            http_set_response_body(response, response_json);
+            
+            long end_time = get_current_time_ms();
+            printf("%s [express] POST /api/board/connect 200 in %ldms :: board connected\n", 
+                   "time", end_time - start_time);
+            
+            free(response_json);
+            json_free(response_obj);
+            json_free(json_data);
+            return;
+        }
+        
         // POST /api/esp32/scan
         if (strcmp(request->path, "/api/esp32/scan") == 0 && strcmp(request->method, "POST") == 0) {
             printf("Начинаем сканирование сети для поиска ESP32 плат...\n");

@@ -24,10 +24,10 @@ typedef struct {
     char status[32]; // "available", "charging", "offline", "maintenance"
     char ip_address[MAX_IP_LENGTH];
     char description[MAX_DESCRIPTION_LENGTH];
-    
+
     float max_power;
     float current_power;
-    
+
     // Данные для slave-станций
     int car_connection;
     int car_charging_permission;
@@ -35,7 +35,7 @@ typedef struct {
     int master_online;
     int master_charging_permission;
     float master_available_power;
-    
+
     // Электрические параметры
     float voltage_phase1;
     float voltage_phase2;
@@ -44,7 +44,7 @@ typedef struct {
     float current_phase2;
     float current_phase3;
     float charger_power;
-    
+
     // Дополнительные параметры
     int single_phase_connection;
     int power_overconsumption;
@@ -68,8 +68,8 @@ void storage_cleanup(void);
 int storage_get_stations(stations_array_t *stations);
 int storage_get_station(int id, charging_station_t *station);
 int storage_create_station(const charging_station_t *station, int *new_id);
-int storage_update_station(int id, const charging_station_t *updates);
 int storage_delete_station(int id);
+int storage_update_station(int id, const charging_station_t *updates);
 
 // Утилиты для работы с JSON
 json_value_t* station_to_json(const charging_station_t *station);
