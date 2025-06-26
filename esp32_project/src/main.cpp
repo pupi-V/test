@@ -460,26 +460,9 @@ void setup() {
   // Инициализация файловой системы
   if (!SPIFFS.begin(true)) {
     Serial.println("ОШИБКА: Не удалось инициализировать SPIFFS");
-    Serial.println("Попытка форматирования...");
-    if (!SPIFFS.format()) {
-      Serial.println("ОШИБКА: Не удалось отформатировать SPIFFS");
-      return;
-    }
-    if (!SPIFFS.begin(true)) {
-      Serial.println("ОШИБКА: SPIFFS недоступна даже после форматирования");
-      return;
-    }
+    return;
   }
   Serial.println("✓ SPIFFS инициализирована");
-  
-  // Проверка файлов в SPIFFS
-  File root = SPIFFS.open("/");
-  File file = root.openNextFile();
-  Serial.println("Файлы в SPIFFS:");
-  while(file) {
-    Serial.printf("  %s (%d байт)\n", file.name(), file.size());
-    file = root.openNextFile();
-  }
 
   // Загрузка данных станций из файла
   loadStationsFromFile();
@@ -508,69 +491,17 @@ void setup() {
   // API маршруты
   setupAPIRoutes();
 
-  // Проверка наличия веб-файлов
-  if (!SPIFFS.exists("/www/index.html")) {
-    Serial.println("ВНИМАНИЕ: /www/index.html не найден, создаем базовую страницу");
-    File file = SPIFFS.open("/index.html", "w");
-    if (file) {
-      file.print(R"(<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>ESP32 Charging Stations</title></head>
-<body><h1>ESP32 Charging Station System</h1>
-<p>Система управления зарядными станциями работает!</p>
-<p>API доступно по адресу: <a href="/api/stations">/api/stations</a></p>
-<script>
-setInterval(() => {
-  fetch('/api/stations').then(r => r.json()).then(data => {
-    console.log('Stations:', data);
-  }).catch(e => console.error(e));
-}, 5000);
-</script></body></html>)");
-      file.close();
-      Serial.println("✓ Создана базовая веб-страница");
-    }
-  }
-
   // Статические файлы веб-интерфейса
   server.serveStatic("/", SPIFFS, "/www/").setDefaultFile("index.html");
-  server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
 
   // Главная страница
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-    Serial.println("Запрос главной страницы");
-    if (SPIFFS.exists("/www/index.html")) {
-      request->send(SPIFFS, "/www/index.html", "text/html");
-    } else if (SPIFFS.exists("/index.html")) {
-      request->send(SPIFFS, "/index.html", "text/html");
-    } else {
-      request->send(200, "text/html", 
-        "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>ESP32</title></head>"
-        "<body><h1>ESP32 Charging Station System</h1>"
-        "<p>Система работает! API: <a href='/api/stations'>/api/stations</a></p></body></html>");
-    }
-  });
-
-  // Обработчик для всех неизвестных запросов
-  server.onNotFound([](AsyncWebServerRequest *request) {
-    Serial.printf("404: %s %s\n", request->methodToString(), request->url().c_str());
-    if (request->url().startsWith("/api/")) {
-      request->send(404, "application/json", "{\"error\":\"API endpoint not found\"}");
-    } else {
-      request->send(404, "text/html", 
-        "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>404</title></head>"
-        "<body><h1>404 - Страница не найдена</h1>"
-        "<p><a href='/'>Главная страница</a> | <a href='/api/stations'>API станций</a></p></body></html>");
-    }
+    request->send(SPIFFS, "/www/index.html", "text/html");
   });
 
   // Запуск веб-сервера
   server.begin();
   Serial.println("✓ Веб-сервер запущен на порту 80");
-  Serial.println("📡 Доступ к системе:");
-  Serial.printf("   WiFi сеть: %s\n", ssid);
-  Serial.printf("   Пароль: %s\n", password);
-  Serial.printf("   IP адрес: http://%s\n", WiFi.softAPIP().toString().c_str());
-  Serial.printf("   mDNS: http://chargingstations.local\n");
-  Serial.printf("   API: http://%s/api/stations\n", WiFi.softAPIP().toString().c_str());
 
   // Создание тестовых станций если файл не найден
   if (stationCount == 0) {
